@@ -1,5 +1,6 @@
 
 #include "Game.h"
+#include "Hero.h"
 #include "Level.h"
 #include "Player.h"
 #include "Utils.h"
@@ -145,6 +146,7 @@ void Game::game_init() {
   ui->init();
 
   DC->level->init();
+  DC->hero->init();
 
   // game start
   background = IC->get(background_img_path);
@@ -236,6 +238,7 @@ bool Game::game_update() {
     DC->player->update();
     SC->update();
     ui->update();
+    DC->hero->update();
     if (state != STATE::START) {
       DC->level->update();
       OC->update();
@@ -272,6 +275,7 @@ void Game::game_draw() {
       DC->level->draw();
       ui->draw();
       OC->draw();
+      DC->hero->draw();
     }
   }
   switch (state) {
