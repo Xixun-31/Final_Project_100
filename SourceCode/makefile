@@ -1,5 +1,5 @@
 OUT := game
-CC := g++
+CC := ../MinGW/bin/g++
 
 CXXFLAGS := -Wall -std=c++17 -O2
 SOURCE := $(wildcard *.cpp */*.cpp)
@@ -7,17 +7,16 @@ OBJ := $(patsubst %.cpp, %.o, $(notdir $(SOURCE)))
 RM_OBJ := 
 RM_OUT := 
 
-# ==========================================
-# Windows 設定 (保留原始設定)
-# ==========================================
 ifeq ($(OS), Windows_NT) 
-    ALLEGRO_PATH := ../allegro
+    # Makefile 在 SourceCode，allegro/MinGW 在上一層
+    ALLEGRO_PATH := ..
     export Path := ../MinGW/bin;$(Path)
 
-    ALLEGRO_FLAGS_RELEASE := -I$(ALLEGRO_PATH)/include -L$(ALLEGRO_PATH)/lib/liballegro_monolith.dll.a
-    ALLEGRO_DLL_PATH_RELEASE := $(ALLEGRO_PATH)/lib/liballegro_monolith.dll.a
-    ALLEGRO_FLAGS_DEBUG := -I$(ALLEGRO_PATH)/include -L$(ALLEGRO_PATH)/lib/liballegro_monolith-debug.dll.a
-    ALLEGRO_DLL_PATH_DEBUG := $(ALLEGRO_PATH)/lib/liballegro_monolith-debug.dll.a
+    # -I 指 include 目錄，-L 指 lib 目錄，-l 指連結哪個 library
+    ALLEGRO_FLAGS_RELEASE := -I../allegro/include -L../allegro/lib -lallegro_monolith
+    ALLEGRO_DLL_PATH_RELEASE := 
+    ALLEGRO_FLAGS_DEBUG := $(ALLEGRO_FLAGS_RELEASE)
+    ALLEGRO_DLL_PATH_DEBUG := 
 
     RM_OBJ := $(foreach name, $(OBJ), del $(name) & )
     ifeq ($(suffix $(OUT)),)
@@ -26,20 +25,12 @@ ifeq ($(OS), Windows_NT)
         RM_OUT := del $(OUT)
     endif
 
-# ==========================================
-# Mac / Linux 設定 (已修正為自動偵測路徑)
-# ==========================================
 else 
     UNAME_S := $(shell uname -s)
     
-    # 使用 pkg-config 自動抓取所有需要的 Allegro 模組
-    # 這樣可以兼容 Intel Mac (/usr/local) 和 Apple Silicon (/opt/homebrew)
     ALLEGRO_LIBRARIES := allegro-5 allegro_image-5 allegro_font-5 allegro_ttf-5 allegro_dialog-5 allegro_primitives-5 allegro_audio-5 allegro_acodec-5
-    
-    # 自動產生正確的 Include 和 Lib 參數
     ALLEGRO_FLAGS_RELEASE := $(shell pkg-config --cflags --libs $(ALLEGRO_LIBRARIES))
     
-    # Mac 下 Debug 和 Release flags 通常共用 pkg-config 的結果
     ALLEGRO_DLL_PATH_RELEASE := 
     ALLEGRO_FLAGS_DEBUG := $(ALLEGRO_FLAGS_RELEASE)
     ALLEGRO_DLL_PATH_DEBUG := 
@@ -48,11 +39,6 @@ else
     RM_OUT := rm -f $(OUT)
 endif
 
-# ==========================================
-# 建置規則
-# ==========================================
-
-# 預設編譯 Release
 all: release
 
 debug:

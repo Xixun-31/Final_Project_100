@@ -150,8 +150,6 @@ void Game::game_init() {
   DC->level->init();
   DC->menu->init();
   DC->hero->init();
-  DC->win->init();
-  DC->lose->init();
 
   // game start
   menu = IC->get(menu_image_path);
