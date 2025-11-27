@@ -150,6 +150,8 @@ void Game::game_init() {
   DC->level->init();
   DC->menu->init();
   DC->hero->init();
+  DC->win->init();
+  DC->lose->init();
 
   // game start
   menu = IC->get(menu_image_path);
@@ -310,21 +312,11 @@ void Game::game_draw() {
   case STATE::END: {
   }
   case STATE::WIN: {
-    al_draw_text(FC->caviar_dreams[FontSize::LARGE], al_map_rgb(255, 255, 255),
-                 DC->window_width / 2., DC->window_height / 2.,
-                 ALLEGRO_ALIGN_CENTRE, "YOU WIN");
-    al_draw_text(FC->caviar_dreams[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
-                 DC->window_width / 2., DC->window_height / 2. + 50,
-                 ALLEGRO_ALIGN_CENTRE, "PRESS ENTER TO MENU");
+    DC->win->draw();
     break;
   }
   case STATE::LOSE: {
-    al_draw_text(FC->caviar_dreams[FontSize::LARGE], al_map_rgb(255, 0, 0),
-                 DC->window_width / 2., DC->window_height / 2.,
-                 ALLEGRO_ALIGN_CENTRE, "YOU LOSE");
-    al_draw_text(FC->caviar_dreams[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
-                 DC->window_width / 2., DC->window_height / 2. + 50,
-                 ALLEGRO_ALIGN_CENTRE, "PRESS ENTER TO MENU");
+    DC->lose->draw();
     break;
   }
   default:

@@ -1,0 +1,51 @@
+g++ -c -Wall -std=c++17 -O2 Game.cpp Hero.cpp Level.cpp Level0.cpp Level1.cpp Level2.cpp Level3.cpp Lose.cpp Main.cpp Menu.cpp Player.cpp UI.cpp Win.cpp algif5/algif.cpp algif5/bitmap.cpp algif5/gif.cpp algif5/lzw.cpp data/DataCenter.cpp data/FontCenter.cpp data/GIFCenter.cpp data/ImageCenter.cpp data/OperationCenter.cpp data/SoundCenter.cpp monsters/Monster.cpp shapes/Shape.cpp towers/Bullet.cpp towers/Tower.cpp -I/opt/homebrew/Cellar/allegro/5.2.10.1_2/include -L/opt/homebrew/Cellar/allegro/5.2.10.1_2/lib -lallegro_image -lallegro_ttf -lallegro_font -lallegro_dialog -lallegro_primitives -lallegro_acodec -lallegro_audio -lallegro
+clang++: warning: -lallegro_image: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: -lallegro_ttf: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: -lallegro_font: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: -lallegro_dialog: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: -lallegro_primitives: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: -lallegro_acodec: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: -lallegro_audio: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: -lallegro: 'linker' input unused [-Wunused-command-line-argument]
+clang++: warning: argument unused during compilation: '-L/opt/homebrew/Cellar/allegro/5.2.10.1_2/lib' [-Wunused-command-line-argument]
+Game.cpp:276:20: warning: unused variable 'OC' [-Wunused-variable]
+  276 |   OperationCenter *OC = OperationCenter::get_instance();
+      |                    ^~
+Game.cpp:24:16: warning: unused variable 'background_img_path' [-Wunused-const-variable]
+   24 | constexpr char background_img_path[] = "./assets/image/StartBackground.jpg";
+      |                ^~~~~~~~~~~~~~~~~~~
+Game.cpp:25:16: warning: unused variable 'background_sound_path' [-Wunused-const-variable]
+   25 | constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg";
+      |                ^~~~~~~~~~~~~~~~~~~~~
+3 warnings generated.
+Level.cpp:46:2: warning: 'sprintf' is deprecated: This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead. [-Wdeprecated-declarations]
+   46 |         sprintf(buffer, LevelSetting::level_path_format, lvl);
+      |         ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_stdio.h:278:1: note: 'sprintf' has been explicitly marked deprecated here
+  278 | __deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead.")
+      | ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h:227:48: note: expanded from macro '__deprecated_msg'
+  227 |         #define __deprecated_msg(_msg) __attribute__((__deprecated__(_msg)))
+      |                                                       ^
+1 warning generated.
+monsters/Monster.cpp:143:2: warning: 'sprintf' is deprecated: This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead. [-Wdeprecated-declarations]
+  143 |         sprintf(
+      |         ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_stdio.h:278:1: note: 'sprintf' has been explicitly marked deprecated here
+  278 | __deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead.")
+      | ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h:227:48: note: expanded from macro '__deprecated_msg'
+  227 |         #define __deprecated_msg(_msg) __attribute__((__deprecated__(_msg)))
+      |                                                       ^
+monsters/Monster.cpp:164:2: warning: 'sprintf' is deprecated: This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead. [-Wdeprecated-declarations]
+  164 |         sprintf(
+      |         ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/_stdio.h:278:1: note: 'sprintf' has been explicitly marked deprecated here
+  278 | __deprecated_msg("This function is provided for compatibility reasons only.  Due to security concerns inherent in the design of sprintf(3), it is highly recommended that you use snprintf(3) instead.")
+      | ^
+/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/sys/cdefs.h:227:48: note: expanded from macro '__deprecated_msg'
+  227 |         #define __deprecated_msg(_msg) __attribute__((__deprecated__(_msg)))
+      |                                                       ^
+2 warnings generated.
+g++ -Wall -std=c++17 -O2 -o game  Game.o  Hero.o  Level.o  Level0.o  Level1.o  Level2.o  Level3.o  Lose.o  Main.o  Menu.o  Player.o  UI.o  Win.o  algif.o  bitmap.o  gif.o  lzw.o  DataCenter.o  FontCenter.o  GIFCenter.o  ImageCenter.o  OperationCenter.o  SoundCenter.o  Monster.o  Shape.o  Bullet.o  Tower.o -I/opt/homebrew/Cellar/allegro/5.2.10.1_2/include -L/opt/homebrew/Cellar/allegro/5.2.10.1_2/lib -lallegro_image -lallegro_ttf -lallegro_font -lallegro_dialog -lallegro_primitives -lallegro_acodec -lallegro_audio -lallegro 
+rm -f  Game.o  Hero.o  Level.o  Level0.o  Level1.o  Level2.o  Level3.o  Lose.o  Main.o  Menu.o  Player.o  UI.o  Win.o  algif.o  bitmap.o  gif.o  lzw.o  DataCenter.o  FontCenter.o  GIFCenter.o  ImageCenter.o  OperationCenter.o  SoundCenter.o  Monster.o  Shape.o  Bullet.o  Tower.o
