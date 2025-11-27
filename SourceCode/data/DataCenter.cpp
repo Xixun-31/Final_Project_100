@@ -45,6 +45,13 @@ DataCenter::DataCenter() {
 DataCenter::~DataCenter() {
   delete player;
   delete level;
+  delete hero;
+  delete menu;
+  delete level1;
+  delete level2;
+  delete level3;
+  delete win;
+  delete lose;
   for (Monster *&m : monsters) {
     delete m;
   }

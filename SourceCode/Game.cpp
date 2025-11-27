@@ -4,6 +4,7 @@
 #include "Menu.h"
 #include "Player.h"
 #include "Utils.h"
+#include "allegro5/keycodes.h"
 #include "data/DataCenter.h"
 #include "data/FontCenter.h"
 #include "data/ImageCenter.h"
@@ -188,7 +189,7 @@ bool Game::game_update() {
   }
   case STATE::LEVEL1: {
     DC->level1->update();
-    if (DC->key_state[ALLEGRO_KEY_1]) {
+    if (DC->key_state[ALLEGRO_KEY_2]) {
       debug_log("<Game> state: change to LEVEL2\n");
       state = STATE::LEVEL2;
       DC->level2->init();
@@ -197,7 +198,7 @@ bool Game::game_update() {
   }
   case STATE::LEVEL2: {
     DC->level2->update();
-    if (DC->key_state[ALLEGRO_KEY_2]) {
+    if (DC->key_state[ALLEGRO_KEY_3]) {
       debug_log("<Game> state: change to LEVEL3\n");
       state = STATE::LEVEL3;
       DC->level3->init();
@@ -206,10 +207,15 @@ bool Game::game_update() {
   }
   case STATE::LEVEL3: {
     DC->level3->update();
-    if (DC->key_state[ALLEGRO_KEY_3]) {
+    if (DC->key_state[ALLEGRO_KEY_W]) {
       debug_log("<Game> state: change to WIN\n");
       state = STATE::WIN;
       DC->win->init();
+    }
+    if (DC->key_state[ALLEGRO_KEY_L]) {
+      debug_log("<Game> state: change to LOSE\n");
+      state = STATE::LOSE;
+      DC->lose->init();
     }
     break;
   }
