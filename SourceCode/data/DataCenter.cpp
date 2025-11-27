@@ -35,6 +35,7 @@ DataCenter::DataCenter() {
   level = new Level();
   hero = new Hero();
   menu = new Menu();
+  level0 = new Level0();
   level1 = new Level1();
   level2 = new Level2();
   level3 = new Level3();
@@ -47,6 +48,7 @@ DataCenter::~DataCenter() {
   delete level;
   delete hero;
   delete menu;
+  delete level0;
   delete level1;
   delete level2;
   delete level3;

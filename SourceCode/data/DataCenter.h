@@ -15,6 +15,7 @@ class Tower;
 class Bullet;
 class Hero;
 class Menu;
+class Level0;
 class Level1;
 class Level2;
 class Level3;
@@ -109,6 +110,7 @@ public:
   std::vector<Bullet *> towerBullets;
   Hero *hero;
   Menu *menu;
+  Level0 *level0;
   Level1 *level1;
   Level2 *level2;
   Level3 *level3;

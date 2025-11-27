@@ -1,6 +1,7 @@
 #include "Game.h"
 #include "Hero.h"
 #include "Level.h"
+#include "Level0.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Utils.h"
@@ -187,12 +188,26 @@ bool Game::game_update() {
     }
     break;
   }
+  case STATE::LEVEL0: {
+    DC->level0->update();
+    if (DC->key_state[ALLEGRO_KEY_1]) {
+      debug_log("<Game> state: change to LEVEL1\n");
+      state = STATE::LEVEL1;
+      DC->level1->init();
+    }
+    break;
+  }
   case STATE::LEVEL1: {
     DC->level1->update();
     if (DC->key_state[ALLEGRO_KEY_2]) {
       debug_log("<Game> state: change to LEVEL2\n");
       state = STATE::LEVEL2;
       DC->level2->init();
+    }
+    if (DC->key_state[ALLEGRO_KEY_0]) {
+      debug_log("<Game> state: change to LEVEL0\n");
+      state = STATE::LEVEL0;
+      DC->level0->init();
     }
     break;
   }
@@ -257,7 +272,7 @@ bool Game::game_update() {
     ui->update();
     DC->hero->update();
     if (state == STATE::LEVEL1 || state == STATE::LEVEL2 ||
-        state == STATE::LEVEL3) {
+        state == STATE::LEVEL3 || state == STATE::LEVEL0) {
       OC->update();
     }
   }
@@ -281,6 +296,11 @@ void Game::game_draw() {
   switch (state) {
   case STATE::MENU: {
     DC->menu->draw();
+    break;
+  }
+  case STATE::LEVEL0: {
+    DC->level0->draw();
+    DC->hero->draw();
     break;
   }
   case STATE::LEVEL1: {
