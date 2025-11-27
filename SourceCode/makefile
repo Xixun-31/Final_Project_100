@@ -1,5 +1,5 @@
 OUT := game
-CC := ../MinGW/bin/g++
+
 
 CXXFLAGS := -Wall -std=c++17 -O2
 SOURCE := $(wildcard *.cpp */*.cpp)
@@ -10,6 +10,7 @@ RM_OUT :=
 ifeq ($(OS), Windows_NT) 
     # Makefile 在 SourceCode，allegro/MinGW 在上一層
     ALLEGRO_PATH := ..
+    CC := ../MinGW/bin/g++
     export Path := ../MinGW/bin;$(Path)
 
     # -I 指 include 目錄，-L 指 lib 目錄，-l 指連結哪個 library
@@ -27,6 +28,7 @@ ifeq ($(OS), Windows_NT)
 
 else 
     UNAME_S := $(shell uname -s)
+    CC := g++
     
     ALLEGRO_LIBRARIES := allegro-5 allegro_image-5 allegro_font-5 allegro_ttf-5 allegro_dialog-5 allegro_primitives-5 allegro_audio-5 allegro_acodec-5
     ALLEGRO_FLAGS_RELEASE := $(shell pkg-config --cflags --libs $(ALLEGRO_LIBRARIES))
