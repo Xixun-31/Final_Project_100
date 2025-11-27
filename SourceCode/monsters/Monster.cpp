@@ -3,6 +3,11 @@
 #include "MonsterCaveMan.h"
 #include "MonsterWolfKnight.h"
 #include "MonsterDemonNinja.h"
+#include "MonsterBird.h"
+#include "MonsterElite.h"
+#include "MonsterSlime.h"
+#include "MonsterSplit.h"
+#include "MonsterSuicide.h"
 #include "../data/DataCenter.h"
 #include "../data/ImageCenter.h"
 #include "../Level.h"
@@ -22,7 +27,13 @@ namespace MonsterSetting {
 		"./assets/image/monster/Wolf",
 		"./assets/image/monster/CaveMan",
 		"./assets/image/monster/WolfKnight",
-		"./assets/image/monster/DemonNinja"
+		"./assets/image/monster/DemonNinja",
+		// skip non-implemented monsters for now 還沒加進去
+		"./assets/image/monster/Bird",
+		"./assets/image/monster/Elite",
+		"./assets/image/monster/Slime",
+		"./assets/image/monster/Split",
+		"./assets/image/monster/Suicide"
 	};
 	static constexpr char dir_path_prefix[][10] = {
 		"UP", "DOWN", "LEFT", "RIGHT"
@@ -49,6 +60,21 @@ Monster *Monster::create_monster(MonsterType type, const vector<Point> &path) {
 		}
 		case MonsterType::DEMONNIJIA: {
 			return new MonsterDemonNinja{path};
+		}
+		case MonsterType::BIRD: {
+			return new MonsterBird{path};
+		}
+		case MonsterType::ELITE: {
+			return new MonsterElite{path};
+		}
+		case MonsterType::SLIME: {
+			return new MonsterSlime{path};
+		}
+		case MonsterType::SPLIT: {
+			return new MonsterSplit{path};
+		}
+		case MonsterType::SUICIDE: {
+			return new MonsterSuicide{path};
 		}
 		case MonsterType::MONSTERTYPE_MAX: {}
 	}
@@ -95,70 +121,89 @@ Monster::Monster(const vector<Point> &path, MonsterType type) {
  * @details * Current position (center of the hit box). The position is moved based on the center of the hit box (Rectangle). If the center of this monster reaches the center of the first point of path, the function will proceed to the next point of path.
  * @details * Update the real bounding box by the center of the hit box calculated as above.
  */
-void
-Monster::update() {
-	DataCenter *DC = DataCenter::get_instance();
-	ImageCenter *IC = ImageCenter::get_instance();
+void Monster::update() {
+    DataCenter *DC = DataCenter::get_instance();
+    ImageCenter *IC = ImageCenter::get_instance();
 
-	// After a period, the bitmap for this monster should switch from (i)-th image to (i+1)-th image to represent animation.
-	if(bitmap_switch_counter) --bitmap_switch_counter;
-	else {
-		bitmap_img_id = (bitmap_img_id + 1) % (bitmap_img_ids[static_cast<int>(dir)].size());
-		bitmap_switch_counter = bitmap_switch_freq;
-	}
-	// v (velocity) divided by FPS is the actual moving pixels per frame.
-	double movement = v / DC->FPS;
-	// Keep trying to move to next destination in "path" while "path" is not empty and we can still move.
-	while(!path.empty() && movement > 0) {
-		const Point &grid = this->path.front();
-		const Rectangle &region = DC->level->grid_to_region(grid);
-		const Point &next_goal = Point{region.center_x(), region.center_y()};
+    // 1. 更新動畫 
+    if (bitmap_switch_counter) --bitmap_switch_counter;
+    else {
+        bitmap_img_id = (bitmap_img_id + 1) % (bitmap_img_ids[static_cast<int>(dir)].size());
+        bitmap_switch_counter = bitmap_switch_freq;
+    }
 
-		// Extract the next destination as "next_goal". If we want to reach next_goal, we need to move "d" pixels.
-		double d = Point::dist(Point{shape->center_x(), shape->center_y()}, next_goal);
-		Dir tmpdir;
-		if(d < movement) {
-			// If we can move more than "d" pixels in this frame, we can directly move onto next_goal and reduce "movement" by "d".
-			movement -= d;
-			tmpdir = convert_dir(Point{next_goal.x - shape->center_x(), next_goal.y - shape->center_y()});
-			shape.reset(new Rectangle{
-				next_goal.x, next_goal.y,
-				next_goal.x, next_goal.y
-		});
-			path.pop();
-		} else {
-			// Otherwise, we move exactly "movement" pixels.
-			double dx = (next_goal.x - shape->center_x()) / d * movement;
-			double dy = (next_goal.y - shape->center_y()) / d * movement;
-			tmpdir = convert_dir(Point{dx, dy});
-			shape->update_center_x(shape->center_x() + dx);
-			shape->update_center_y(shape->center_y() + dy);
-			movement = 0;
-		}
-		// Update facing direction.
-		dir = tmpdir;
-	}
-	// Update real hit box for monster.
-	char buffer[50];
-	sprintf(
-		buffer, "%s/%s_%d.png",
-		MonsterSetting::monster_imgs_root_path[static_cast<int>(type)],
-		MonsterSetting::dir_path_prefix[static_cast<int>(dir)],
-		bitmap_img_ids[static_cast<int>(dir)][bitmap_img_id]);
-	ALLEGRO_BITMAP *bitmap = IC->get(buffer);
-	const double &cx = shape->center_x();
-	const double &cy = shape->center_y();
-	// We set the hit box slightly smaller than the actual bounding box of the image because there are mostly empty spaces near the edge of a image.
-	const int &h = al_get_bitmap_width(bitmap) * 0.8;
-	const int &w = al_get_bitmap_height(bitmap) * 0.8;
-	shape.reset(new Rectangle{
-		(cx - w / 2.), (cy - h / 2.),
-		(cx - w / 2. + w), (cy - h / 2. + h)
-	});
+    // 2. 計算這一幀可以移動的距離
+    double movement = v / DC->FPS;
+
+    // 3. 自動朝英雄靠近
+    double hero_x = DC->hero->shape->center_x();
+    double hero_y = DC->hero->shape->center_y();
+
+    const double attack_range = 5.0;  // 你可以調整這個數字
+
+    while (movement > 0) {
+        double cx = shape->center_x();
+        double cy = shape->center_y();
+
+        double dx = hero_x - cx;
+        double dy = hero_y - cy;
+        double d  = std::sqrt(dx * dx + dy * dy);
+
+        // 已經在英雄身上了，或距離太小就不動
+        if (d < 1e-3) break;
+
+        // 如果已經進入攻擊距離，就只更新方向，不再往前走
+        if (d <= attack_range) {
+            dir = convert_dir(Point{dx, dy});
+            break;
+        }
+
+        // 此幀實際移動距離：不超過 movement，也不超過 (d - attack_range)
+        double move_dist = std::min(movement, d - attack_range);
+
+        double move_dx = dx / d * move_dist;
+        double move_dy = dy / d * move_dist;
+
+        // 更新朝向
+        Dir tmpdir = convert_dir(Point{move_dx, move_dy});
+        dir = tmpdir;
+
+        // 更新位置
+        shape->update_center_x(cx + move_dx);
+        shape->update_center_y(cy + move_dy);
+
+        // 扣掉剩餘可移動距離（通常 while 只會跑一次，但這樣寫結構比較通用）
+        movement -= move_dist;
+
+        // 這種追玩家通常一幀跑一次就好，直接 break 也可以：
+        // break;
+    }
+
+    // 4. 更新 hitbox（跟原本一樣）
+    char buffer[50];
+    std::sprintf(
+        buffer, "%s/%s_%d.png",
+        MonsterSetting::monster_imgs_root_path[static_cast<int>(type)],
+        MonsterSetting::dir_path_prefix[static_cast<int>(dir)],
+        bitmap_img_ids[static_cast<int>(dir)][bitmap_img_id]
+    );
+    ALLEGRO_BITMAP *bitmap = IC->get(buffer);
+
+    const double cx = shape->center_x();
+    const double cy = shape->center_y();
+
+    // 讓 hitbox 比圖小一點
+    int w = al_get_bitmap_width(bitmap) * 0.8;
+    int h = al_get_bitmap_height(bitmap) * 0.8;
+
+    shape.reset(new Rectangle{
+        (cx - w / 2.0), (cy - h / 2.0),
+        (cx - w / 2.0 + w), (cy - h / 2.0 + h)
+    });
 }
 
-void
-Monster::draw() {
+
+void Monster::draw() {
 	ImageCenter *IC = ImageCenter::get_instance();
 	char buffer[50];
 	sprintf(
