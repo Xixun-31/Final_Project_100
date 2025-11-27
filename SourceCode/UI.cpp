@@ -10,7 +10,7 @@
 #include "shapes/Rectangle.h"
 #include "Player.h"
 #include "towers/Tower.h"
-#include "Level.h"
+#include "Level/Level.h"
 
 // fixed settings
 constexpr char love_img_path[] = "./assets/image/love.png";
@@ -86,7 +86,8 @@ UI::update() {
 				state = STATE::SELECT;
 			}
 			break;
-		} case STATE::SELECT: {
+		} 
+		/*case STATE::SELECT: {
 			// click mouse left button: place
 			if(DC->mouse_state[1] && !DC->prev_mouse_state[1]) {
 				debug_log("<UI> state: change to PLACE\n");
@@ -121,7 +122,7 @@ UI::update() {
 			debug_log("<UI> state: change to HALT\n");
 			state = STATE::HALT;
 			break;
-		}
+		}*/ 
 	}
 }
 

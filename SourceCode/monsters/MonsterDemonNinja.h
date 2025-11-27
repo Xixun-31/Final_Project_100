@@ -4,19 +4,18 @@
 #include "Monster.h"
 
 // fixed settings: MonsterDemonNinja attributes
-class MonsterDemonNinja : public Monster
-{
+class MonsterDemonNinja : public Monster {
 public:
-	MonsterDemonNinja(const std::vector<Point> &path) : Monster{path, MonsterType::DEMONNIJIA} {
-		HP = 50;
-		v = 60;
-		money = 40;
-		bitmap_img_ids.emplace_back(std::vector<int>({0, 1, 2, 3})); // UP
-		bitmap_img_ids.emplace_back(std::vector<int>({0, 1, 2, 3})); // DOWN
-		bitmap_img_ids.emplace_back(std::vector<int>({0, 1, 2, 3})); // LEFT
-		bitmap_img_ids.emplace_back(std::vector<int>({0, 1, 2, 3})); // RIGHT
-		bitmap_switch_freq = 20;
-	}
+  MonsterDemonNinja(const Point &p) : Monster{MonsterType::DEMONNIJIA, p} {
+    HP = 50;
+    v = 60;
+    money = 40;
+    bitmap_img_ids[0] = {0, 1, 2, 3}; // UP
+    bitmap_img_ids[1] = {0, 1, 2, 3}; // DOWN
+    bitmap_img_ids[2] = {0, 1, 2, 3}; // LEFT
+    bitmap_img_ids[3] = {0, 1, 2, 3}; // RIGHT
+    bitmap_switch_freq = 20;
+  }
 };
 
 #endif

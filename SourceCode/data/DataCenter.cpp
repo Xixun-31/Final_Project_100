@@ -1,9 +1,5 @@
 #include "DataCenter.h"
-#include "../Level.h"
-#include "../Level0.h"
-#include "../Level1.h"
-#include "../Level2.h"
-#include "../Level3.h"
+#include "../Level/Level.h"
 #include "../Lose.h"
 #include "../Menu.h"
 #include "../Player.h"
@@ -35,10 +31,6 @@ DataCenter::DataCenter() {
   level = new Level();
   hero = new Hero();
   menu = new Menu();
-  level0 = new Level0();
-  level1 = new Level1();
-  level2 = new Level2();
-  level3 = new Level3();
   win = new Win();
   lose = new Lose();
 }
@@ -48,10 +40,6 @@ DataCenter::~DataCenter() {
   delete level;
   delete hero;
   delete menu;
-  delete level0;
-  delete level1;
-  delete level2;
-  delete level3;
   delete win;
   delete lose;
   for (Monster *&m : monsters) {

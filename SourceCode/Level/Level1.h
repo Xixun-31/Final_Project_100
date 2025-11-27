@@ -6,7 +6,7 @@
 
 #include <allegro5/allegro.h>
 
-constexpr char level1_image_path[] = "./assets/image/scene/Level1.jpg";
+
 
 class Level1 {
 public:

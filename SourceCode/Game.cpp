@@ -1,7 +1,6 @@
 #include "Game.h"
 #include "Hero.h"
-#include "Level.h"
-#include "Level0.h"
+#include "Level/Level.h"
 #include "Menu.h"
 #include "Player.h"
 #include "Utils.h"
@@ -159,13 +158,14 @@ void Game::game_init() {
   al_start_timer(timer);
 }
 
-/**
+/** 
  * @brief The function processes all data update.
  * @details The behavior of the whole game body is determined by its state.
  * @return Whether the game should keep running (true) or reaches the
  * termination criteria (false).
  * @see Game::STATE
  */
+int level_counter;
 bool Game::game_update() {
   DataCenter *DC = DataCenter::get_instance();
   OperationCenter *OC = OperationCenter::get_instance();
@@ -177,69 +177,51 @@ bool Game::game_update() {
     static bool is_played = false;
     if (!is_played) {
       SC->play(game_start_sound_path, ALLEGRO_PLAYMODE_ONCE);
-      // DC->level->load_level(1); // Removed old level loading
+      level_counter = 1;
+      DC->level->load_level(level_counter); // Removed old level loading
       is_played = true;
     }
 
     if (DC->key_state[ALLEGRO_KEY_SPACE]) {
-      debug_log("<Game> state: change to LEVEL1\n");
-      state = STATE::LEVEL1;
-      DC->level1->init();
+      debug_log("<Game> state: change to LEVEL\n");
+      state = STATE::LEVEL;
+      DC->level->init();
     }
     break;
-  }
-  case STATE::LEVEL0: {
-    DC->level0->update();
-    if (DC->key_state[ALLEGRO_KEY_1]) {
-      debug_log("<Game> state: change to LEVEL1\n");
-      state = STATE::LEVEL1;
-      DC->level1->init();
-    }
-    break;
-  }
-  case STATE::LEVEL1: {
-    DC->level1->update();
-    if (DC->key_state[ALLEGRO_KEY_2]) {
-      debug_log("<Game> state: change to LEVEL2\n");
-      state = STATE::LEVEL2;
-      DC->level2->init();
-    }
-    if (DC->key_state[ALLEGRO_KEY_0]) {
-      debug_log("<Game> state: change to LEVEL0\n");
-      state = STATE::LEVEL0;
-      DC->level0->init();
-    }
-    break;
-  }
-  case STATE::LEVEL2: {
-    DC->level2->update();
-    if (DC->key_state[ALLEGRO_KEY_3]) {
-      debug_log("<Game> state: change to LEVEL3\n");
-      state = STATE::LEVEL3;
-      DC->level3->init();
-    }
-    break;
-  }
-  case STATE::LEVEL3: {
-    DC->level3->update();
-    if (DC->key_state[ALLEGRO_KEY_W]) {
-      debug_log("<Game> state: change to WIN\n");
-      state = STATE::WIN;
-      DC->win->init();
-    }
-    if (DC->key_state[ALLEGRO_KEY_L]) {
-      debug_log("<Game> state: change to LOSE\n");
-      state = STATE::LOSE;
-      DC->lose->init();
-    }
-    break;
-  }
-  case STATE::PAUSE: {
+  } case STATE::LEVEL: {
+			static bool BGM_played = false;
+			if(!BGM_played) {
+				background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
+				BGM_played = true;
+			}
+
+			if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
+				SC->toggle_playing(background);
+				debug_log("<Game> state: change to PAUSE\n");
+				state = STATE::PAUSE;
+			}
+			if(DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
+				/*if (level_counter == 3) {
+          debug_log("<Game> state: change to WIN\n"); 
+          state = STATE::WIN;
+          break;
+        }*/
+        debug_log("<Game> state: change to END\n");
+        level_counter++;
+				state = STATE::LEVEL;
+			}
+      
+			if(DC->player->HP == 0) {
+				debug_log("<Game> state: change to END\n");
+				state = STATE::LOSE;
+			}
+			break;
+		} case STATE::PAUSE: {
     if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
       SC->toggle_playing(background);
-      debug_log("<Game> state: change to LEVEL1\n"); // Assuming return to
-                                                     // LEVEL1 for now
-      state = STATE::LEVEL1;
+      debug_log("<Game> state: change to LEVEL\n"); // Assuming return to
+                                                     // LEVEL for now
+      state = STATE::LEVEL;
     }
     break;
   }
@@ -298,23 +280,8 @@ void Game::game_draw() {
     DC->menu->draw();
     break;
   }
-  case STATE::LEVEL0: {
-    DC->level0->draw();
-    DC->hero->draw();
-    break;
-  }
-  case STATE::LEVEL1: {
-    DC->level1->draw();
-    DC->hero->draw();
-    break;
-  }
-  case STATE::LEVEL2: {
-    DC->level2->draw();
-    DC->hero->draw();
-    break;
-  }
-  case STATE::LEVEL3: {
-    DC->level3->draw();
+  case STATE::LEVEL: {
+    DC->level->draw();
     DC->hero->draw();
     break;
   }
