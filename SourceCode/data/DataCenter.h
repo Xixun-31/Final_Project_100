@@ -8,13 +8,18 @@
 #include <map>
 #include <vector>
 
-
 class Player;
 class Level;
 class Monster;
 class Tower;
 class Bullet;
 class Hero;
+class Menu;
+class Level1;
+class Level2;
+class Level3;
+class Win;
+class Lose;
 
 /**
  * @brief Stores generic global data and relatively small data structures.
@@ -103,6 +108,12 @@ public:
    */
   std::vector<Bullet *> towerBullets;
   Hero *hero;
+  Menu *menu;
+  Level1 *level1;
+  Level2 *level2;
+  Level3 *level3;
+  Win *win;
+  Lose *lose;
 
 private:
   DataCenter();

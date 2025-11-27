@@ -1,7 +1,13 @@
 #ifndef GAME_H_INCLUDED
 #define GAME_H_INCLUDED
 
+#include "Level0.h"
+#include "Level1.h"
+#include "Level2.h"
+#include "Level3.h"
+#include "Lose.h"
 #include "UI.h"
+#include "Win.h"
 #include <allegro5/allegro.h>
 
 /**
@@ -25,7 +31,11 @@ private:
    * @see Game::game_update()
    */
   enum class STATE {
-    START, // -> LEVEL
+    MENU, // -> LEVEL
+    LEVEL0,
+    LEVEL1,
+    LEVEL2,
+    LEVEL3,
     LEVEL, // -> PAUSE, END
     PAUSE, // -> LEVEL
     END,
@@ -35,7 +45,8 @@ private:
   STATE state;
   ALLEGRO_EVENT event;
   ALLEGRO_BITMAP *game_icon;
-  ALLEGRO_BITMAP *background;
+  // ALLEGRO_BITMAP *background;
+  ALLEGRO_BITMAP *menu;
 
 private:
   ALLEGRO_DISPLAY *display;

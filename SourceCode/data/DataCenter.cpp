@@ -1,11 +1,17 @@
 #include "DataCenter.h"
 #include "../Level.h"
+#include "../Level0.h"
+#include "../Level1.h"
+#include "../Level2.h"
+#include "../Level3.h"
+#include "../Lose.h"
+#include "../Menu.h"
 #include "../Player.h"
+#include "../Win.h"
 #include "../monsters/Monster.h"
 #include "../towers/Bullet.h"
 #include "../towers/Tower.h"
 #include <cstring>
-
 
 // fixed settings
 namespace DataSetting {
@@ -28,6 +34,12 @@ DataCenter::DataCenter() {
   player = new Player();
   level = new Level();
   hero = new Hero();
+  menu = new Menu();
+  level1 = new Level1();
+  level2 = new Level2();
+  level3 = new Level3();
+  win = new Win();
+  lose = new Lose();
 }
 
 DataCenter::~DataCenter() {
