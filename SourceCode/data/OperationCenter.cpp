@@ -5,8 +5,11 @@
 #include "../towers/Bullet.h"
 #include "../towers/Tower.h"
 #include "DataCenter.h"
+#include "../Utils.h"
 
 void OperationCenter::update() {
+  
+  
   // Update monsters.
   _update_monster();
   // Update towers.
@@ -21,7 +24,6 @@ void OperationCenter::update() {
   // If any hero attacks any monster, we delete the monster.
   _update_hero_monster();
 
-  //_update_monster_hero();
 }
 
 void OperationCenter::_update_monster() {

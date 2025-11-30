@@ -108,18 +108,32 @@ Monster::Monster(MonsterType type, const Point &p) {
  * @details 更新：動畫 → 追玩家移動 → 更新 hitbox
  */
 void Monster::update() {
-  DataCenter *DC = DataCenter::get_instance();
-  ImageCenter *IC = ImageCenter::get_instance();
+    DataCenter *DC = DataCenter::get_instance();
+    ImageCenter *IC = ImageCenter::get_instance();
+    // 1. 更新動畫（先拿出該方向的 frame 列表）
+    int d = static_cast<int>(dir);
+  auto &frames = bitmap_img_ids[d];
 
-  // 1. 更新動畫
-  if (bitmap_switch_counter)
-    --bitmap_switch_counter;
-  else {
-    bitmap_img_id =
-        (bitmap_img_id + 1) % (bitmap_img_ids[static_cast<int>(dir)].size());
-    bitmap_switch_counter = bitmap_switch_freq;
+  if (frames.empty()) {
+    debug_log("Monster::update(): no frames for type=%d dir=%d\n",
+              (int)type, d);
+    // 沒有對這個方向設定任何 frame，先不要更新動畫，避免崩潰
+    bitmap_img_id = 0;
+  } else {
+    // 保證 bitmap_img_id 在合法範圍內
+    if (bitmap_img_id < 0 || bitmap_img_id >= (int)frames.size()) {
+      debug_log("Monster::update(): bitmap_img_id=%d out of range, reset to 0\n",
+                bitmap_img_id);
+      bitmap_img_id = 0;
+    }
+
+    if (bitmap_switch_counter)
+      --bitmap_switch_counter;
+    else {
+      bitmap_img_id = (bitmap_img_id + 1) % frames.size();
+      bitmap_switch_counter = bitmap_switch_freq;
+    }
   }
-
   // 2. 計算這一幀可以移動的距離
   double movement = v / DC->FPS;
 
@@ -185,12 +199,29 @@ void Monster::update() {
 }
 
 void Monster::draw() {
-  ImageCenter *IC = ImageCenter::get_instance();
+ ImageCenter *IC = ImageCenter::get_instance();
+  int d = static_cast<int>(dir);
+  auto &frames = bitmap_img_ids[d];
+
+  if (frames.empty()) {
+    debug_log("Monster::draw(): no frames for type=%d dir=%d\n",
+              (int)type, d);
+    return;
+  }
+  if (bitmap_img_id < 0 || bitmap_img_id >= (int)frames.size()) {
+    debug_log("Monster::draw(): bitmap_img_id=%d out of range, reset to 0\n",
+              bitmap_img_id);
+    bitmap_img_id = 0;
+  }
+
   char buffer[50];
   std::sprintf(buffer, "%s/%s_%d.png",
                MonsterSetting::monster_imgs_root_path[static_cast<int>(type)],
-               MonsterSetting::dir_path_prefix[static_cast<int>(dir)],
-               bitmap_img_ids[static_cast<int>(dir)][bitmap_img_id]);
+               MonsterSetting::dir_path_prefix[d],
+               frames[bitmap_img_id]);
+
+  debug_log("Drawing monster of type %d, dir %d, frame index %d (file id %d)\n",
+            (int)type, d, bitmap_img_id, frames[bitmap_img_id]);
   ALLEGRO_BITMAP *bitmap = IC->get(buffer);
   al_draw_bitmap(bitmap, shape->center_x() - al_get_bitmap_width(bitmap) / 2,
                  shape->center_y() - al_get_bitmap_height(bitmap) / 2, 0);

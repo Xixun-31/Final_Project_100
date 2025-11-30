@@ -41,7 +41,7 @@ else
     RM_OUT := rm -f $(OUT)
 endif
 
-all: release
+all: debug 
 
 debug:
 	$(CC) -c -g $(CXXFLAGS) $(SOURCE) $(ALLEGRO_FLAGS_DEBUG) -D DEBUG

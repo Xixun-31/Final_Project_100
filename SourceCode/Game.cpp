@@ -1,5 +1,5 @@
 #include "Game.h"
-#include "Hero.h"
+//#include "Hero.h"
 #include "Level/Level.h"
 #include "Menu.h"
 #include "Player.h"
@@ -17,7 +17,7 @@
 #include <allegro5/allegro_ttf.h>
 #include <cstring>
 #include <vector>
-
+#define DEBUG
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.png";
 constexpr char game_start_sound_path[] = "./assets/sound/growl.wav";
@@ -150,6 +150,8 @@ void Game::game_init() {
   DC->level->init();
   DC->menu->init();
   DC->hero->init();
+  DC->lose->init();
+  DC->win->init();
 
   // game start
   menu = IC->get(menu_image_path);
@@ -165,7 +167,8 @@ void Game::game_init() {
  * termination criteria (false).
  * @see Game::STATE
  */
-int level_counter;
+int curr_level;
+int level_counter = -1;
 bool Game::game_update() {
   DataCenter *DC = DataCenter::get_instance();
   OperationCenter *OC = OperationCenter::get_instance();
@@ -178,7 +181,6 @@ bool Game::game_update() {
     if (!is_played) {
       SC->play(game_start_sound_path, ALLEGRO_PLAYMODE_ONCE);
       level_counter = 1;
-      DC->level->load_level(level_counter); // Removed old level loading
       is_played = true;
     }
 
@@ -186,10 +188,16 @@ bool Game::game_update() {
       debug_log("<Game> state: change to LEVEL\n");
       state = STATE::LEVEL;
       DC->level->init();
+      
     }
     break;
   } case STATE::LEVEL: {
 			static bool BGM_played = false;
+      if (curr_level != level_counter) {
+        curr_level = level_counter;
+        DC->level->load_level(curr_level); // Removed old level loading
+      }
+      //debug_log("Remaining monsters: %d\n", DC->level->remain_monsters());
 			if(!BGM_played) {
 				background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
 				BGM_played = true;
@@ -201,22 +209,23 @@ bool Game::game_update() {
 				state = STATE::PAUSE;
 			}
 			if(DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
-				/*if (level_counter == 3) {
-          debug_log("<Game> state: change to WIN\n"); 
+			  level_counter = level_counter + 1;
+        
+        // curr_level = -1; // 下一次進來會重新 load 下一關
+        if (level_counter > 3) {
+          debug_log("<Game> state: change to WIN\n");
           state = STATE::WIN;
-          break;
-        }*/
-        debug_log("<Game> state: change to END\n");
-        level_counter++;
-				state = STATE::LEVEL;
-			}
-      
+          BGM_played = false;
+          curr_level = -1;
+        }
+    
+      }
 			if(DC->player->HP == 0) {
 				debug_log("<Game> state: change to END\n");
 				state = STATE::LOSE;
 			}
 			break;
-		} case STATE::PAUSE: {
+	} case STATE::PAUSE: {
     if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
       SC->toggle_playing(background);
       debug_log("<Game> state: change to LEVEL\n"); // Assuming return to
@@ -229,10 +238,13 @@ bool Game::game_update() {
     return false;
   }
   case STATE::WIN: {
+    al_stop_sample_instance(background);
     if (DC->key_state[ALLEGRO_KEY_ENTER]) {
       debug_log("<Game> state: change to MENU\n");
       state = STATE::MENU;
-      // DC->level->init();
+      DC->level->init();
+      level_counter = 1;
+      curr_level = -1;
     }
     break;
   }
@@ -240,7 +252,7 @@ bool Game::game_update() {
     if (DC->key_state[ALLEGRO_KEY_ENTER]) {
       debug_log("<Game> state: change to MENU\n");
       state = STATE::MENU;
-      // DC->level->init();
+      DC->level->init();
     }
     break;
   }
@@ -253,9 +265,9 @@ bool Game::game_update() {
     SC->update();
     ui->update();
     DC->hero->update();
-    if (state == STATE::LEVEL1 || state == STATE::LEVEL2 ||
-        state == STATE::LEVEL3 || state == STATE::LEVEL0) {
-      OC->update();
+    if (state == STATE::LEVEL) {
+        DC->level->update();
+        OC->update();
     }
   }
   // game_update is finished. The states of current frame will be previous
@@ -283,6 +295,7 @@ void Game::game_draw() {
   case STATE::LEVEL: {
     DC->level->draw();
     DC->hero->draw();
+    OC->draw();
     break;
   }
   case STATE::PAUSE: {
