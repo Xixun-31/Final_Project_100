@@ -121,6 +121,8 @@ public:
   Level3 *level3;
   Win *win;
   Lose *lose;
+  int level_counter;
+  int curr_level;
 
 private:
   DataCenter();

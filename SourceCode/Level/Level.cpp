@@ -1,7 +1,10 @@
 #include "Level.h"
+#include "../Player.h"
 #include "../Utils.h"
 #include "../data/DataCenter.h"
 #include "../monsters/Monster.h"
+#include "../towers/Bullet.h"
+#include "../towers/Tower.h"
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_image.h>
 #include <array>
@@ -18,11 +21,25 @@ constexpr int monster_spawn_rate = 60;
 }; // namespace LevelSetting
 
 void Level::init() {
+  DataCenter *DC = DataCenter::get_instance();
+  DC->level_counter = 1;
+  DC->curr_level = -1;
+  DC->player->reset();
   level = -1;
   monster_spawn_counter = LevelSetting::monster_spawn_rate;
   num_of_monsters.clear();
   num_of_monsters.resize(static_cast<size_t>(MonsterType::MONSTERTYPE_MAX), 0);
   background = nullptr;
+
+  for (Monster *monster : DC->monsters) {
+    delete monster;
+  }
+  DC->monsters.clear();
+
+  for (Bullet *bullet : DC->heroBullets) {
+    delete bullet;
+  }
+  DC->heroBullets.clear();
 }
 
 /**

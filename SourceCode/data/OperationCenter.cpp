@@ -97,8 +97,11 @@ void OperationCenter::_update_hero_monster() {
   for (size_t i = 0; i < monsters.size(); ++i) {
     // Check if the hero overlaps with the monster.
     if (hero->shape->overlap(*(monsters[i]->shape))) {
-      // Delete the monster.
-      monsters[i]->HP = 0;
+      // If hero is not invincible, hurt the player and make hero invincible.
+      if (!hero->is_invincible()) {
+        DC->player->HP--;
+        hero->hit();
+      }
     }
   }
 }
@@ -118,16 +121,6 @@ void OperationCenter::_update_monster_player() {
       // Since the current monsster is killed, we can directly proceed to next
       // monster.
       break;
-    }
-    // Check if the monster reaches the hero.
-    double dx = monsters[i]->shape->center_x() - DC->hero->shape->center_x();
-    double dy = monsters[i]->shape->center_y() - DC->hero->shape->center_y();
-    if (dx * dx + dy * dy <
-        100) { // Simple distance check, assuming player radius ~10
-      delete monsters[i];
-      monsters.erase(monsters.begin() + i);
-      DC->player->HP--;
-      --i;
     }
   }
 }

@@ -33,6 +33,8 @@ DataCenter::DataCenter() {
   menu = new Menu();
   win = new Win();
   lose = new Lose();
+  level_counter = 1;
+  curr_level = -1;
 }
 
 DataCenter::~DataCenter() {
