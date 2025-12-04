@@ -42,7 +42,7 @@ void Hero::update() {
   if (roll_timer > 0) {
     // Rolling logic (Stiffness during roll)
     state = roll_direction; // Keep facing the roll direction
-    invincible_timer = 10;
+    invincible_timer = roll_delay_duration;
     switch (roll_direction) {
     case HeroState::UP:
       shape->update_center_y(shape->center_y() - roll_speed);
@@ -154,4 +154,4 @@ void Hero::hit() {
   }
 }
 
-bool Hero::is_invincible() { return invincible_timer > 0 || roll_timer > 0; }
+bool Hero::is_invincible() { return invincible_timer > 0; }
