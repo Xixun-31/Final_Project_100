@@ -24,6 +24,7 @@ void OperationCenter::update() {
   // If any hero attacks any monster, we delete the monster.
   _update_hero_monster();
   _update_heroBullet();
+  _update_monster_heroBullet();
 }
 
 void OperationCenter::_update_monster() {
