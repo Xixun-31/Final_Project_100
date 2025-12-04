@@ -21,6 +21,7 @@ void Level::init() {
   level = -1;
   monster_spawn_counter = LevelSetting::monster_spawn_rate;
   num_of_monsters.clear();
+  num_of_monsters.resize(static_cast<size_t>(MonsterType::MONSTERTYPE_MAX), 0);
   background = nullptr;
 }
 
@@ -81,6 +82,9 @@ void Level::update() {
   }
 
   DataCenter *DC = DataCenter::get_instance();
+
+  if (num_of_monsters.empty())
+    return;
 
   for (size_t i = 0; i < num_of_monsters.size(); ++i) {
     if (num_of_monsters[i] == 0)

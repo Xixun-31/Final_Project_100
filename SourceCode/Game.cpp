@@ -1,5 +1,5 @@
 #include "Game.h"
-//#include "Hero.h"
+// #include "Hero.h"
 #include "Level/Level.h"
 #include "Menu.h"
 #include "Player.h"
@@ -19,7 +19,7 @@
 #include <vector>
 #define DEBUG
 // fixed settings
-constexpr char game_icon_img_path[] = "./assets/image/game_icon.png";
+constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
 constexpr char game_start_sound_path[] = "./assets/sound/growl.wav";
 constexpr char background_img_path[] = "./assets/image/StartBackground.jpg";
 constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg";
@@ -131,6 +131,7 @@ void Game::game_init() {
   // set window icon
   game_icon = IC->get(game_icon_img_path);
   al_set_display_icon(display, game_icon);
+  al_set_window_title(display, "Enter the Gungeon 2");
 
   // register events to event_queue
   al_register_event_source(event_queue, al_get_display_event_source(display));
@@ -160,7 +161,7 @@ void Game::game_init() {
   al_start_timer(timer);
 }
 
-/** 
+/**
  * @brief The function processes all data update.
  * @details The behavior of the whole game body is determined by its state.
  * @return Whether the game should keep running (true) or reaches the
@@ -188,48 +189,48 @@ bool Game::game_update() {
       debug_log("<Game> state: change to LEVEL\n");
       state = STATE::LEVEL;
       DC->level->init();
-      
     }
     break;
-  } case STATE::LEVEL: {
-			static bool BGM_played = false;
-      if (curr_level != level_counter) {
-        curr_level = level_counter;
-        DC->level->load_level(curr_level); // Removed old level loading
-      }
-      //debug_log("Remaining monsters: %d\n", DC->level->remain_monsters());
-			if(!BGM_played) {
-				background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
-				BGM_played = true;
-			}
+  }
+  case STATE::LEVEL: {
+    static bool BGM_played = false;
+    if (curr_level != level_counter) {
+      curr_level = level_counter;
+      DC->level->load_level(curr_level); // Removed old level loading
+    }
+    // debug_log("Remaining monsters: %d\n", DC->level->remain_monsters());
+    if (!BGM_played) {
+      background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
+      BGM_played = true;
+    }
 
-			if(DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
-				SC->toggle_playing(background);
-				debug_log("<Game> state: change to PAUSE\n");
-				state = STATE::PAUSE;
-			}
-			if(DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
-			  level_counter = level_counter + 1;
-        
-        // curr_level = -1; // 下一次進來會重新 load 下一關
-        if (level_counter > 3) {
-          debug_log("<Game> state: change to WIN\n");
-          state = STATE::WIN;
-          BGM_played = false;
-          curr_level = -1;
-        }
-    
+    if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
+      SC->toggle_playing(background);
+      debug_log("<Game> state: change to PAUSE\n");
+      state = STATE::PAUSE;
+    }
+    if (DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
+      level_counter = level_counter + 1;
+
+      // curr_level = -1; // 下一次進來會重新 load 下一關
+      if (level_counter > 3) {
+        debug_log("<Game> state: change to WIN\n");
+        state = STATE::WIN;
+        BGM_played = false;
+        curr_level = -1;
       }
-			if(DC->player->HP == 0) {
-				debug_log("<Game> state: change to END\n");
-				state = STATE::LOSE;
-			}
-			break;
-	} case STATE::PAUSE: {
+    }
+    if (DC->player->HP == 0) {
+      debug_log("<Game> state: change to END\n");
+      state = STATE::LOSE;
+    }
+    break;
+  }
+  case STATE::PAUSE: {
     if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
       SC->toggle_playing(background);
       debug_log("<Game> state: change to LEVEL\n"); // Assuming return to
-                                                     // LEVEL for now
+                                                    // LEVEL for now
       state = STATE::LEVEL;
     }
     break;
@@ -266,8 +267,8 @@ bool Game::game_update() {
     ui->update();
     DC->hero->update();
     if (state == STATE::LEVEL) {
-        DC->level->update();
-        OC->update();
+      DC->level->update();
+      OC->update();
     }
   }
   // game_update is finished. The states of current frame will be previous

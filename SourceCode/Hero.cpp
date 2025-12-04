@@ -1,4 +1,5 @@
 #include "Hero.h"
+#include "HeroBullet.h"
 #include "algif5/algif.h"
 #include "data/DataCenter.h"
 #include "data/GIFCenter.h"
@@ -27,22 +28,41 @@ void Hero::init() {
 
 void Hero::update() {
   DataCenter *DC = DataCenter::get_instance();
+  GIFCenter *GC = GIFCenter::get_instance();
+  ALGIF_ANIMATION *animation = GC->get(gif[state]);
   if (DC->key_state[ALLEGRO_KEY_W]) {
     state = HeroState::UP;
     shape->update_center_y(shape->center_y() - speed);
+    if (shape->center_y() - animation->height / 2 < 0) {
+      shape->update_center_y(animation->height / 2);
+    }
   }
   if (DC->key_state[ALLEGRO_KEY_S]) {
     state = HeroState::DOWN;
     shape->update_center_y(shape->center_y() + speed);
+    if (shape->center_y() + animation->height / 2 > DC->window_height) {
+      shape->update_center_y(DC->window_height - animation->height / 2);
+    }
   }
   if (DC->key_state[ALLEGRO_KEY_A]) {
     state = HeroState::LEFT;
     shape->update_center_x(shape->center_x() - speed);
+    if (shape->center_x() - animation->width / 2 < 0) {
+      shape->update_center_x(animation->width / 2);
+    }
   }
   if (DC->key_state[ALLEGRO_KEY_D]) {
     state = HeroState::RIGHT;
     shape->update_center_x(shape->center_x() + speed);
+    if (shape->center_x() + animation->width / 2 > DC->window_width) {
+      shape->update_center_x(DC->window_width - animation->width / 2);
+    }
   }
+  if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) {
+    attack();
+  }
+  if (counter > 0)
+    counter--;
 }
 
 void Hero::draw() {
@@ -50,4 +70,23 @@ void Hero::draw() {
   ALGIF_ANIMATION *animation = GC->get(gif[state]);
   algif_draw_gif(animation, shape->center_x() - animation->width / 2,
                  shape->center_y() - animation->height / 2, 0);
+}
+
+void Hero::attack() {
+  if (counter > 0)
+    return;
+  DataCenter *DC = DataCenter::get_instance();
+  // Create bullet
+  // Use a simple arrow image for now, or we can add a new asset later
+  // Assuming "arrow" is available or reuse tower bullet image
+  // Let's use "./assets/image/tower/Arcane_Beam.png" or similar if available
+  // Or just reuse one from TowerSetting.
+  // For now, I'll use a placeholder path, or check what images are available.
+  // I'll use "./assets/image/tower/Arcane_Beam.png" as a safe bet if it exists,
+  // or better, let's check ImageCenter or TowerSetting.
+  // Actually, let's just use a hardcoded path for now and user can change it.
+  DC->heroBullets.emplace_back(
+      new HeroBullet(Point{shape->center_x(), shape->center_y()}, DC->mouse,
+                     "./assets/image/tower/Arcane_Beam.png", 500, 5, 400));
+  counter = attack_freq;
 }

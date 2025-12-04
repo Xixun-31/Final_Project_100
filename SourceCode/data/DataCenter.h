@@ -108,6 +108,11 @@ public:
    * @see Bullet
    */
   std::vector<Bullet *> towerBullets;
+  /**
+   * @brief Raw list of Hero Bullet objects.
+   * @see HeroBullet
+   */
+  std::vector<Bullet *> heroBullets;
   Hero *hero;
   Menu *menu;
   Level0 *level0;

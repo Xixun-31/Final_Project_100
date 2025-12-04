@@ -1,15 +1,14 @@
 #include "OperationCenter.h"
 #include "../Hero.h"
 #include "../Player.h"
+#include "../Utils.h"
 #include "../monsters/Monster.h"
 #include "../towers/Bullet.h"
 #include "../towers/Tower.h"
 #include "DataCenter.h"
-#include "../Utils.h"
 
 void OperationCenter::update() {
-  
-  
+
   // Update monsters.
   _update_monster();
   // Update towers.
@@ -23,7 +22,7 @@ void OperationCenter::update() {
   _update_monster_player();
   // If any hero attacks any monster, we delete the monster.
   _update_hero_monster();
-
+  _update_heroBullet();
 }
 
 void OperationCenter::_update_monster() {
@@ -118,6 +117,7 @@ void OperationCenter::draw() {
   _draw_monster();
   _draw_tower();
   _draw_towerBullet();
+  _draw_heroBullet();
 }
 
 void OperationCenter::_draw_monster() {
@@ -137,4 +137,25 @@ void OperationCenter::_draw_towerBullet() {
       DataCenter::get_instance()->towerBullets;
   for (Bullet *towerBullet : towerBullets)
     towerBullet->draw();
+}
+
+void OperationCenter::_update_heroBullet() {
+  std::vector<Bullet *> &heroBullets = DataCenter::get_instance()->heroBullets;
+  for (Bullet *heroBullet : heroBullets)
+    heroBullet->update();
+
+  // Remove dead bullets
+  for (size_t i = 0; i < heroBullets.size(); ++i) {
+    if (heroBullets[i]->get_fly_dist() <= 0) {
+      delete heroBullets[i];
+      heroBullets.erase(heroBullets.begin() + i);
+      --i;
+    }
+  }
+}
+
+void OperationCenter::_draw_heroBullet() {
+  std::vector<Bullet *> &heroBullets = DataCenter::get_instance()->heroBullets;
+  for (Bullet *heroBullet : heroBullets)
+    heroBullet->draw();
 }
