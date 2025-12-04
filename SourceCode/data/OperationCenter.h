@@ -41,6 +41,7 @@ private:
   void _draw_tower();
   void _draw_towerBullet();
   void _draw_heroBullet();
+  void _draw_effect();
 };
 
 #endif

@@ -7,6 +7,7 @@
 #include <allegro5/mouse.h>
 #include <map>
 #include <vector>
+#include "../Effect.h"
 
 class Player;
 class Level;
@@ -98,6 +99,7 @@ public:
    * @see Monster
    */
   std::vector<Monster *> monsters;
+  std::vector<EffectEvent> effectEvents;
   /**
    * @brief Raw list of Tower objects.
    * @see Tower

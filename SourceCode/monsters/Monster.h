@@ -6,12 +6,14 @@
 #include "../shapes/Rectangle.h"
 #include <vector>
 
+class DataCenter;
 
 enum class MonsterType {
   WOLF,
+  SMALLWOLF,
   CAVEMAN,
   WOLFKNIGHT,
-  DEMONNIJIA,
+  DEMONNINJA,
   BIRD,
   ELITE,
   SLIME,
@@ -35,7 +37,7 @@ public:
   virtual int get_money() const;
   int money;
   int HP;
-
+  virtual void special_ability(DataCenter* DC);
 protected:
   // 建構子：不再吃 path，只記住自己是什麼 type
   Monster(MonsterType type, const Point &p);

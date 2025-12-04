@@ -4,6 +4,7 @@
 #include "Object.h"
 #include <map>
 #include <string>
+#include <vector>
 
 enum class HeroState { LEFT, RIGHT, UP, DOWN, HeroState_MAX };
 

@@ -8,6 +8,7 @@
 #include "MonsterSuicide.h"
 #include "MonsterWolf.h"
 #include "MonsterWolfKnight.h"
+#include "MonsterSmallWolf.h"
 
 
 #include "../Hero.h" 
@@ -16,6 +17,7 @@
 #include "../data/ImageCenter.h"
 #include "../shapes/Point.h"
 #include "../shapes/Rectangle.h"
+#include "../Effect.h"
 
 
 #include <algorithm>
@@ -30,7 +32,7 @@ using namespace std;
 namespace MonsterSetting {
 static constexpr char monster_imgs_root_path[static_cast<int>(
     MonsterType::MONSTERTYPE_MAX)][40] = {
-    "./assets/image/monster/Wolf", "./assets/image/monster/CaveMan",
+    "./assets/image/monster/Wolf","./assets/image/monster/Wolf","./assets/image/monster/CaveMan",
     "./assets/image/monster/WolfKnight", "./assets/image/monster/DemonNinja",
     // 之後要實作再打開
     "./assets/image/monster/Bird", "./assets/image/monster/Elite",
@@ -51,7 +53,7 @@ Monster *Monster::create_monster(MonsterType type, const Point &p) {
     return new MonsterCaveMan{p};
   case MonsterType::WOLFKNIGHT:
     return new MonsterWolfKnight{p};
-  case MonsterType::DEMONNIJIA:
+  case MonsterType::DEMONNINJA:
     return new MonsterDemonNinja{p};
   case MonsterType::BIRD:
     return new MonsterBird{p};
@@ -228,3 +230,23 @@ void Monster::draw() {
 }
 
 int Monster::get_money() const { return money; }
+
+void Monster::special_ability(DataCenter* DC) {
+ 
+}
+void MonsterWolf::special_ability(DataCenter* DC) {
+    if (HP <= 0 && !splited) {
+        splited = true;
+
+        Point pos1{shape->center_x() + 50, shape->center_y()};
+        Point pos2{shape->center_x() - 50, shape->center_y()};
+
+        Monster *s1 = new MonsterSmallWolf(pos1);
+        Monster *s2 = new MonsterSmallWolf(pos2);
+        DC->monsters.push_back(s1);
+        DC->monsters.push_back(s2);
+
+        // 丟一個 SPLIT 特效事件（Effect 系統會負責畫）
+        Effect::emit_split(Point{shape->center_x(), shape->center_y()});
+    }
+}

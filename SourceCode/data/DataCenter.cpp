@@ -53,4 +53,5 @@ DataCenter::~DataCenter() {
   for (Bullet *&b : towerBullets) {
     delete b;
   }
+  effectEvents.clear();
 }
