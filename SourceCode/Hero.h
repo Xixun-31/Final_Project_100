@@ -65,6 +65,17 @@ private:
   bool is_reloading = false;
   int reload_timer = 0;
   const int reload_duration = 60; // 1 second
+  // Bomb system
+  bool is_bombing = false;
+  int bomb_timer = 0;
+  const int bomb_duration = 10; // Reduced duration
+  std::vector<std::string> boom_img;
+  int bomb_count = 3;
+  const int max_bomb_count = 3;
+  void activate_bomb();
+
+public:
+  int get_bomb_count() const { return bomb_count; }
 };
 
 #endif

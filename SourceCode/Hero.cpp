@@ -63,6 +63,9 @@ void Hero::init() {
   pain_img = "./assets/image/hero/pain.png";
   delay_img = "./assets/image/hero/delay.png";
   prepare_img.clear();
+  boom_img.clear();
+  boom_img.push_back("./assets/image/hero/boom1.png");
+  boom_img.push_back("./assets/image/hero/boom2.png");
 
   // Reset state variables
   is_moving = false;
@@ -70,6 +73,9 @@ void Hero::init() {
   is_dying = false;
   is_pain = false;
   is_reloading = false;
+  is_bombing = false;
+  bomb_timer = 0;
+  bomb_count = max_bomb_count;
   ammo = max_ammo;
   reload_timer = 0;
   animation_frame = 0;
@@ -113,6 +119,18 @@ void Hero::update() {
       ammo < max_ammo) {
     reload();
     // Don't return, allow movement
+  }
+
+  // Bomb activation
+  if (DC->key_state[ALLEGRO_KEY_B] && !DC->prev_key_state[ALLEGRO_KEY_B]) {
+    activate_bomb();
+  }
+
+  if (is_bombing) {
+    bomb_timer--;
+    if (bomb_timer <= 0) {
+      is_bombing = false;
+    }
   }
 
   if (invincible_timer > 0) {
@@ -286,6 +304,23 @@ void Hero::draw() {
     float y = shape->center_y() - 50;
     al_draw_filled_rectangle(x, y, x + bar_width * ratio, y + bar_height,
                              al_map_rgb(255, 255, 255));
+  } else if (is_bombing) {
+    int frame_idx = (bomb_duration - bomb_timer) / 5 % 2;
+    bitmap = IC->get(boom_img[frame_idx]);
+
+    // Draw expanding circles (shockwave)
+    DataCenter *DC = DataCenter::get_instance();
+    float max_radius = std::max(DC->window_width, DC->window_height);
+    float progress = (float)(bomb_duration - bomb_timer) / bomb_duration;
+    float radius1 = progress * max_radius * 1.5; // Faster and larger
+    float radius2 = (progress - 0.1) * max_radius * 1.5;
+
+    if (radius1 > 0)
+      al_draw_circle(shape->center_x(), shape->center_y(), radius1,
+                     al_map_rgb(255, 0, 0), 5);
+    if (radius2 > 0)
+      al_draw_circle(shape->center_x(), shape->center_y(), radius2,
+                     al_map_rgb(255, 100, 100), 5);
   } else if (roll_timer > 0) {
     bitmap = IC->get(slide_img);
   } else if (is_pain) {
@@ -341,6 +376,21 @@ void Hero::reload() {
     return;
   is_reloading = true;
   reload_timer = reload_duration;
+}
+
+void Hero::activate_bomb() {
+  if (is_bombing || bomb_count <= 0)
+    return;
+  is_bombing = true;
+  bomb_timer = bomb_duration;
+  bomb_count--;
+
+  // Clear all bullets
+  DataCenter *DC = DataCenter::get_instance();
+  for (auto bullet : DC->towerBullets) {
+    delete bullet;
+  }
+  DC->towerBullets.clear();
 }
 
 void Hero::hit() {

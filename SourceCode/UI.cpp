@@ -77,6 +77,8 @@ void UI::update() {
     }
     // click mouse left button
     if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) {
+      // Tower summoning disabled
+      /*
       // no money
       if (price > DC->player->coin) {
         debug_log("<UI> Not enough money to buy tower %d.\n", on_item);
@@ -84,6 +86,7 @@ void UI::update() {
       }
       debug_log("<UI> state: change to SELECT\n");
       state = STATE::SELECT;
+      */
     }
     break;
   }
@@ -150,6 +153,12 @@ void UI::draw() {
   al_draw_textf(FC->courier_new[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
                 DC->window_width - 150, DC->window_height - 50,
                 ALLEGRO_ALIGN_LEFT, "Ammo: %d/%d", hero->get_ammo(), 10);
+
+  // Draw bomb count
+  al_draw_textf(FC->courier_new[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
+                love_img_padding, love_img_padding + 40, ALLEGRO_ALIGN_LEFT,
+                "Bomb: %d", hero->get_bomb_count());
+
   // draw tower shop items
   // for(auto &[bitmap, p, price] : tower_items) {
   // 	int w = al_get_bitmap_width(bitmap);
