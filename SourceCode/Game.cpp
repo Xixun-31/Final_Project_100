@@ -187,6 +187,8 @@ bool Game::game_update() {
       debug_log("<Game> state: change to LEVEL\n");
       state = STATE::LEVEL;
       DC->level->init();
+      DC->player->HP = 5; // Reset HP
+      DC->hero->init();   // Re-init hero to reset states
     }
     break;
   }
@@ -209,26 +211,25 @@ bool Game::game_update() {
     }
     if (DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
       DC->level_counter++;
-
-      // curr_level = -1; // 下一次進來會重新 load 下一關
       if (DC->level_counter > 3) {
         debug_log("<Game> state: change to WIN\n");
         state = STATE::WIN;
         BGM_played = false;
       }
     }
-    if (DC->player->HP == 0) {
-      debug_log("<Game> state: change to END\n");
-      state = STATE::LOSE;
-      BGM_played = false;
+    if (DC->player->HP <= 0) {
+      if (DC->hero->is_death_anim_done()) {
+        debug_log("<Game> state: change to END\n");
+        state = STATE::LOSE;
+        BGM_played = false;
+      }
     }
     break;
   }
   case STATE::PAUSE: {
     if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
       SC->toggle_playing(background);
-      debug_log("<Game> state: change to LEVEL\n"); // Assuming return to
-                                                    // LEVEL for now
+      debug_log("<Game> state: change to LEVEL\n");
       state = STATE::LEVEL;
     }
     break;
@@ -260,7 +261,7 @@ bool Game::game_update() {
     SC->update();
     ui->update();
     DC->hero->update();
-    if (state == STATE::LEVEL) {
+    if (state == STATE::LEVEL && !DC->hero->is_dying) {
       DC->level->update();
       OC->update();
     }

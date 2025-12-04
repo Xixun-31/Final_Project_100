@@ -144,6 +144,12 @@ void UI::draw() {
   al_draw_textf(FC->courier_new[FontSize::MEDIUM], al_map_rgb(0, 0, 0),
                 game_field_length + love_img_padding, love_img_padding,
                 ALLEGRO_ALIGN_LEFT, "coin: %5d", player_coin);
+
+  // Draw ammo
+  Hero *hero = DC->hero;
+  al_draw_textf(FC->courier_new[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
+                DC->window_width - 150, DC->window_height - 50,
+                ALLEGRO_ALIGN_LEFT, "Ammo: %d/%d", hero->get_ammo(), 10);
   // draw tower shop items
   // for(auto &[bitmap, p, price] : tower_items) {
   // 	int w = al_get_bitmap_width(bitmap);

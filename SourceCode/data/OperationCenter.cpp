@@ -99,7 +99,6 @@ void OperationCenter::_update_hero_monster() {
     if (hero->shape->overlap(*(monsters[i]->shape))) {
       // If hero is not invincible, hurt the player and make hero invincible.
       if (!hero->is_invincible()) {
-        DC->player->HP--;
         hero->hit();
       }
     }
