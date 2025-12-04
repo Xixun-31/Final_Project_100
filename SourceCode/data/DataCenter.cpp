@@ -51,4 +51,7 @@ DataCenter::~DataCenter() {
   for (Bullet *&b : towerBullets) {
     delete b;
   }
+  for (Bullet *&b : heroBullets) {
+    delete b;
+  }
 }

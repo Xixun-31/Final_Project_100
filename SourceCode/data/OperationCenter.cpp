@@ -23,6 +23,7 @@ void OperationCenter::update() {
   // If any hero attacks any monster, we delete the monster.
   _update_hero_monster();
   _update_heroBullet();
+  _update_monster_heroBullet();
 }
 
 void OperationCenter::_update_monster() {
@@ -65,6 +66,24 @@ void OperationCenter::_update_monster_towerBullet() {
         monsters[i]->HP -= towerBullets[j]->get_dmg();
         delete towerBullets[j];
         towerBullets.erase(towerBullets.begin() + j);
+        --j;
+      }
+    }
+  }
+}
+
+void OperationCenter::_update_monster_heroBullet() {
+  DataCenter *DC = DataCenter::get_instance();
+  std::vector<Monster *> &monsters = DC->monsters;
+  std::vector<Bullet *> &heroBullets = DC->heroBullets;
+  for (size_t i = 0; i < monsters.size(); ++i) {
+    for (size_t j = 0; j < heroBullets.size(); ++j) {
+      // Check if the bullet overlaps with the monster.
+      if (monsters[i]->shape->overlap(*(heroBullets[j]->shape))) {
+        // Reduce the HP of the monster. Delete the bullet.
+        monsters[i]->HP -= heroBullets[j]->get_dmg();
+        delete heroBullets[j];
+        heroBullets.erase(heroBullets.begin() + j);
         --j;
       }
     }

@@ -331,4 +331,6 @@ Game::~Game() {
     al_destroy_timer(timer);
   if (event_queue)
     al_destroy_event_queue(event_queue);
+  if (ui)
+    delete ui;
 }
