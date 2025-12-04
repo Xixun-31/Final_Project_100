@@ -7,6 +7,7 @@
 #include <allegro5/mouse.h>
 #include <map>
 #include <vector>
+#include "../Effect.h"
 
 class Player;
 class Level;
@@ -108,6 +109,9 @@ public:
    * @see Bullet
    */
   std::vector<Bullet *> towerBullets;
+  /* 
+  */
+  std::vector<EffectEvent> effectEvents;
   /**
    * @brief Raw list of Hero Bullet objects.
    * @see HeroBullet

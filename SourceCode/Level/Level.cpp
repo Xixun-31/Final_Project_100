@@ -61,7 +61,7 @@ void Level::load_level(int lvl) {
     num_of_monsters[static_cast<size_t>(MonsterType::CAVEMAN)] = 2;
     break;
   case 3: // level 3
-    num_of_monsters[static_cast<size_t>(MonsterType::DEMONNIJIA)] = 2;
+    num_of_monsters[static_cast<size_t>(MonsterType::DEMONNINJA)] = 2;
     num_of_monsters[static_cast<size_t>(MonsterType::WOLFKNIGHT)] = 2;
     break;
   default:

@@ -6,7 +6,7 @@
 // fixed settings: MonsterDemonNinja attributes
 class MonsterDemonNinja : public Monster {
 public:
-  MonsterDemonNinja(const Point &p) : Monster{MonsterType::DEMONNIJIA, p} {
+  MonsterDemonNinja(const Point &p) : Monster{MonsterType::DEMONNINJA, p} {
     HP = 50;
     v = 60;
     money = 40;

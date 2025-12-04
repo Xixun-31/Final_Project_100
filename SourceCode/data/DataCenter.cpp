@@ -9,6 +9,7 @@
 #include "../towers/Tower.h"
 #include <cstring>
 
+
 // fixed settings
 namespace DataSetting {
 constexpr double FPS = 60;
@@ -51,4 +52,5 @@ DataCenter::~DataCenter() {
   for (Bullet *&b : towerBullets) {
     delete b;
   }
+  effectEvents.clear();
 }

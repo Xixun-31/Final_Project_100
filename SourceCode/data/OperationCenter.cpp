@@ -6,6 +6,7 @@
 #include "../towers/Bullet.h"
 #include "../towers/Tower.h"
 #include "DataCenter.h"
+#include "../Effect.h"
 
 void OperationCenter::update() {
 
@@ -23,6 +24,7 @@ void OperationCenter::update() {
   // If any hero attacks any monster, we delete the monster.
   _update_hero_monster();
   _update_heroBullet();
+
 }
 
 void OperationCenter::_update_monster() {
@@ -92,6 +94,7 @@ void OperationCenter::_update_monster_player() {
     // Check if the monster is killed.
     if (monsters[i]->HP <= 0) {
       // Monster gets killed. Player receives money.
+      monsters[i]->special_ability(DC);
       player->coin += monsters[i]->get_money();
       delete monsters[i];
       monsters.erase(monsters.begin() + i);
@@ -118,6 +121,7 @@ void OperationCenter::draw() {
   _draw_tower();
   _draw_towerBullet();
   _draw_heroBullet();
+  _draw_effect();
 }
 
 void OperationCenter::_draw_monster() {
@@ -158,4 +162,8 @@ void OperationCenter::_draw_heroBullet() {
   std::vector<Bullet *> &heroBullets = DataCenter::get_instance()->heroBullets;
   for (Bullet *heroBullet : heroBullets)
     heroBullet->draw();
+}
+
+void OperationCenter::_draw_effect() {
+    Effect::draw_all();
 }
