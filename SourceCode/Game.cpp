@@ -168,20 +168,18 @@ void Game::game_init() {
  * termination criteria (false).
  * @see Game::STATE
  */
-int curr_level;
-int level_counter = -1;
+
 bool Game::game_update() {
   DataCenter *DC = DataCenter::get_instance();
   OperationCenter *OC = OperationCenter::get_instance();
   SoundCenter *SC = SoundCenter::get_instance();
   static ALLEGRO_SAMPLE_INSTANCE *background = nullptr;
-
   switch (state) {
   case STATE::MENU: {
     static bool is_played = false;
     if (!is_played) {
       SC->play(game_start_sound_path, ALLEGRO_PLAYMODE_ONCE);
-      level_counter = 1;
+      DC->level_counter = 1;
       is_played = true;
     }
 
@@ -194,9 +192,9 @@ bool Game::game_update() {
   }
   case STATE::LEVEL: {
     static bool BGM_played = false;
-    if (curr_level != level_counter) {
-      curr_level = level_counter;
-      DC->level->load_level(curr_level); // Removed old level loading
+    if (DC->curr_level != DC->level_counter) {
+      DC->curr_level = DC->level_counter;
+      DC->level->load_level(DC->curr_level); // Removed old level loading
     }
     // debug_log("Remaining monsters: %d\n", DC->level->remain_monsters());
     if (!BGM_played) {
@@ -210,19 +208,19 @@ bool Game::game_update() {
       state = STATE::PAUSE;
     }
     if (DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
-      level_counter = level_counter + 1;
+      DC->level_counter++;
 
       // curr_level = -1; // 下一次進來會重新 load 下一關
-      if (level_counter > 3) {
+      if (DC->level_counter > 3) {
         debug_log("<Game> state: change to WIN\n");
         state = STATE::WIN;
         BGM_played = false;
-        curr_level = -1;
       }
     }
     if (DC->player->HP == 0) {
       debug_log("<Game> state: change to END\n");
       state = STATE::LOSE;
+      BGM_played = false;
     }
     break;
   }
@@ -243,9 +241,6 @@ bool Game::game_update() {
     if (DC->key_state[ALLEGRO_KEY_ENTER]) {
       debug_log("<Game> state: change to MENU\n");
       state = STATE::MENU;
-      DC->level->init();
-      level_counter = 1;
-      curr_level = -1;
     }
     break;
   }
@@ -253,7 +248,6 @@ bool Game::game_update() {
     if (DC->key_state[ALLEGRO_KEY_ENTER]) {
       debug_log("<Game> state: change to MENU\n");
       state = STATE::MENU;
-      DC->level->init();
     }
     break;
   }
@@ -297,6 +291,7 @@ void Game::game_draw() {
     DC->level->draw();
     DC->hero->draw();
     OC->draw();
+    ui->draw();
     break;
   }
   case STATE::PAUSE: {
@@ -331,4 +326,6 @@ Game::~Game() {
     al_destroy_timer(timer);
   if (event_queue)
     al_destroy_event_queue(event_queue);
+  if (ui)
+    delete ui;
 }
