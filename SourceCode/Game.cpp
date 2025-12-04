@@ -246,6 +246,7 @@ bool Game::game_update() {
     break;
   }
   case STATE::LOSE: {
+    al_stop_sample_instance(background);
     if (DC->key_state[ALLEGRO_KEY_ENTER]) {
       debug_log("<Game> state: change to MENU\n");
       state = STATE::MENU;

@@ -35,7 +35,6 @@ void Effect::draw_all() {
 
                 double t = al_get_time() - ee.startTime;
                 ALLEGRO_BITMAP *frame = algif_get_bitmap(anim, t);
-s
                 if (frame) {
                     int w = al_get_bitmap_width(frame);
                     int h = al_get_bitmap_height(frame);
