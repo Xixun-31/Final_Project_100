@@ -53,6 +53,7 @@ DataCenter::~DataCenter() {
   for (Bullet *&b : towerBullets) {
     delete b;
   }
+  effectEvents.clear();
   for (Bullet *&b : heroBullets) {
     delete b;
   }
