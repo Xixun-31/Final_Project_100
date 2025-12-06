@@ -114,6 +114,13 @@ void OperationCenter::_update_monster_player() {
     if (monsters[i]->HP <= 0) {
       monsters[i]->special_ability(DC);
       // Monster gets killed. Player receives money.
+      Point pos(monsters[i]->shape->center_x(), monsters[i]->shape->center_y());
+      if (monsters[i]->type == MonsterType::CAVEMAN) {
+          Effect::emit_SSR_death(pos);
+      } else {
+          Effect::emit_death(pos);
+      }
+
       player->coin += monsters[i]->get_money();
       delete monsters[i];
       monsters.erase(monsters.begin() + i);

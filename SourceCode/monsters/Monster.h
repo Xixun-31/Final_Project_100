@@ -38,11 +38,12 @@ public:
   int money;
   int HP;
   virtual void special_ability(DataCenter* DC);
+  MonsterType type;
 protected:
   // 建構子：不再吃 path，只記住自己是什麼 type
   Monster(MonsterType type, const Point &p);
 
-  MonsterType type;
+  
   Dir dir;
 
   double v; // 速度：像素 / 秒（在子類別設定）

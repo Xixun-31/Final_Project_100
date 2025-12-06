@@ -7,7 +7,7 @@
 class MonsterCaveMan : public Monster {
 public:
   MonsterCaveMan(const Point &p) : Monster{MonsterType::CAVEMAN, p} {
-    HP = 25;
+    HP = 2;
     v = 40;
     money = 20;
     bitmap_img_ids[0] = {0, 1, 2, 3}; // UP
