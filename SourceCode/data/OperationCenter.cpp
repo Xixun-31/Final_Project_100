@@ -24,12 +24,15 @@ void OperationCenter::update() {
   _update_hero_monster();
   _update_heroBullet();
   _update_monster_heroBullet();
+  _update_monsterBullet();
 }
 
 void OperationCenter::_update_monster() {
   std::vector<Monster *> &monsters = DataCenter::get_instance()->monsters;
-  for (Monster *monster : monsters)
+  for (Monster *monster : monsters) {
     monster->update();
+    monster->special_ability(DataCenter::get_instance());
+  }
 }
 
 void OperationCenter::_update_tower() {
@@ -90,6 +93,22 @@ void OperationCenter::_update_monster_heroBullet() {
   }
 }
 
+void OperationCenter::_update_monsterBullet() {
+  std::vector<Bullet*>& bullets = DataCenter::get_instance()->monsterBullets;
+
+  for (Bullet* b : bullets)
+    b->update();
+
+  // 刪掉飛完的
+  for (size_t i = 0; i < bullets.size(); ++i) {
+    if (bullets[i]->get_fly_dist() <= 0) {
+      delete bullets[i];
+      bullets.erase(bullets.begin() + i);
+      --i;
+    }
+  }
+}
+
 void OperationCenter::_update_hero_monster() {
   DataCenter *DC = DataCenter::get_instance();
   std::vector<Monster *> &monsters = DC->monsters;
@@ -138,6 +157,7 @@ void OperationCenter::draw() {
   _draw_towerBullet();
   _draw_heroBullet();
   _draw_effect();
+  _draw_monsterBullet();
 }
 
 void OperationCenter::_draw_monster() {
@@ -178,6 +198,13 @@ void OperationCenter::_draw_heroBullet() {
   std::vector<Bullet *> &heroBullets = DataCenter::get_instance()->heroBullets;
   for (Bullet *heroBullet : heroBullets)
     heroBullet->draw();
+}
+
+void OperationCenter::_draw_monsterBullet() {
+  std::vector<Bullet*>& bullets = DataCenter::get_instance()->monsterBullets;
+  
+  for (Bullet* b : bullets)
+    b->draw();
 }
 
 void OperationCenter::_draw_effect() {

@@ -114,6 +114,7 @@ public:
    * @brief Raw list of Hero Bullet objects.
    * @see HeroBullet
    */
+  std::vector<Bullet *> monsterBullets;
   std::vector<Bullet *> heroBullets;
   Hero *hero;
   Menu *menu;

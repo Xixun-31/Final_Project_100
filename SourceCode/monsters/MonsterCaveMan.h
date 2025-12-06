@@ -16,6 +16,13 @@ public:
     bitmap_img_ids[3] = {0, 1, 2, 3}; // RIGHT
     bitmap_switch_freq = 20;
   }
+  void special_ability(DataCenter* DC) override;
+private:
+  double last_shoot_time = 0;
+  double shoot_cooldown = 1.5; // seconds
+
+  bool is_shooting = false;
+  double shoot_anim_start = 0.0; // seconds
 };
 
 #endif
