@@ -112,20 +112,48 @@ void OperationCenter::_update_hero_monsterBullet() {
 }
 
 void OperationCenter::_update_monsterBullet() {
-  std::vector<Bullet*>& bullets = DataCenter::get_instance()->monsterBullets;
+    DataCenter* DC = DataCenter::get_instance();
+    auto& bullets = DC->monsterBullets;
+    Hero* hero = DC->hero;
 
-  for (Bullet* b : bullets)
-    b->update();
+    // 先更新子彈位置
+    for (Bullet* b : bullets)
+        b->update();
 
-  // 刪掉飛完的
-  for (size_t i = 0; i < bullets.size(); ++i) {
-    if (bullets[i]->get_fly_dist() <= 0) {
-      delete bullets[i];
-      bullets.erase(bullets.begin() + i);
-      --i;
+    // Shockwave 判定
+    bool shock_on = hero->is_shockwave_active();
+    float shock_r = hero->getShockwaveRadius();
+    float hx = hero->shape->center_x();
+    float hy = hero->shape->center_y();
+
+    for (size_t i = 0; i < bullets.size(); ++i) {
+        Bullet* b = bullets[i];
+
+        // 1. 被震波擋掉
+        if (shock_on && shock_r > 0.0f) {
+            float bx = b->shape->center_x();
+            float by = b->shape->center_y();
+            float dx = bx - hx;
+            float dy = by - hy;
+
+            if (dx*dx + dy*dy <= shock_r * shock_r) {
+                // 這顆子彈被 shockwave 擋掉
+                delete b;
+                bullets.erase(bullets.begin() + i);
+                --i;
+                continue;
+            }
+        }
+
+        // 2. 正常射程結束
+        if (b->get_fly_dist() <= 0) {
+            delete b;
+            bullets.erase(bullets.begin() + i);
+            --i;
+        }
     }
-  }
 }
+
 
 void OperationCenter::_update_hero_monster() {
   DataCenter *DC = DataCenter::get_instance();

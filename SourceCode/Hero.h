@@ -27,6 +27,8 @@ public:
   int get_reload_timer() const { return reload_timer; }
   int get_reload_duration() const { return reload_duration; }
   void reload();
+  bool is_shockwave_active() const { return is_bombing; }
+  float getShockwaveRadius() const;
 
 private:
   HeroState state = HeroState::UP;

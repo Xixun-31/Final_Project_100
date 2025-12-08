@@ -14,6 +14,18 @@ static constexpr char dir_path_postfix[][10] = {"left", "right", "back",
                                                 "front"};
 } // namespace HeroSetting
 
+float Hero::getShockwaveRadius() const {
+    if (!is_bombing) return 0.0f;
+
+    DataCenter *DC = DataCenter::get_instance();
+    float max_radius = std::max(DC->window_width, DC->window_height);
+    float progress = (float)(bomb_duration - bomb_timer) / bomb_duration;
+
+    float radius = progress * max_radius * 1.5f;
+    return std::max(radius, 0.0f);
+}
+
+
 void Hero::init() {
   img.clear();
   run_img.clear();
