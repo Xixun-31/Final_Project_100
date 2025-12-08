@@ -38,7 +38,7 @@ public:
   int money;
   int HP;
   virtual void special_ability(DataCenter* DC);
-  MonsterType type;
+  MonsterType peek_type() const;
 protected:
   // 建構子：不再吃 path，只記住自己是什麼 type
   Monster(MonsterType type, const Point &p);
@@ -51,7 +51,7 @@ protected:
   int bitmap_switch_counter;
   int bitmap_switch_freq;
   std::vector<int> bitmap_img_ids[4];
-  
+  MonsterType type; 
 };
 
 #endif

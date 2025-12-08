@@ -73,6 +73,8 @@ Monster *Monster::create_monster(MonsterType type, const Point &p) {
   return nullptr;
 }
 
+MonsterType Monster::peek_type() const {return type;}
+
 /**
  * @brief 將一個位移向量 v 換成面向方向
  */
@@ -175,8 +177,10 @@ void Monster::update() {
     dir = tmpdir;
 
     // 更新位置
+  
     shape->update_center_x(cx + move_dx);
     shape->update_center_y(cy + move_dy);
+  
 
     movement -= move_dist;
 
@@ -199,6 +203,17 @@ void Monster::update() {
 
   shape.reset(new Rectangle{(cx - w / 2.0), (cy - h / 2.0), (cx - w / 2.0 + w),
                             (cy - h / 2.0 + h)});
+}
+
+void MonsterCaveMan::update() {
+    double now = al_get_time();
+
+    if (is_shooting) {
+        
+        if (now - shoot_anim_start >= 3 * shoot_frame_duration) is_shooting = false;
+    return;
+  }
+    Monster::update();
 }
 
 void Monster::draw() {
@@ -230,6 +245,42 @@ void Monster::draw() {
                  shape->center_y() - al_get_bitmap_height(bitmap) / 2, 0);
 }
 
+void MonsterCaveMan::draw() {
+    if (is_shooting) {
+        ImageCenter* IC = ImageCenter::get_instance();
+
+        double now = al_get_time();
+        double t = now - shoot_anim_start;
+
+        // 算現在是第幾幀
+        int frame = static_cast<int>(t / shoot_frame_duration);
+
+        if (frame >= shoot_frame_count) {
+            // 動畫播完，就結束射擊狀態，回到走路動畫
+            is_shooting = false;
+            Monster::draw();
+            return;
+        }
+
+        // 根據 frame 決定貼圖路徑
+        std::string path =
+            "./assets/image/monster/CaveMan/SHOOT_" + std::to_string(frame) + ".png";
+
+        ALLEGRO_BITMAP* bmp = IC->get(path);
+
+        al_draw_bitmap(
+            bmp,
+            shape->center_x() - al_get_bitmap_width(bmp) / 2,
+            shape->center_y() - al_get_bitmap_height(bmp) / 2,
+            0
+        );
+        return;
+    }
+    Monster::draw();
+}
+
+
+
 int Monster::get_money() const { return money; }
 
 void Monster::special_ability(DataCenter* DC) {
@@ -256,7 +307,7 @@ void MonsterCaveMan::special_ability(DataCenter* DC) {
   debug_log("CaveMan special ability called.\n");
     double now = al_get_time();
 
-    // 1. 處理「開槍動作」播放時間（例如 0.3 秒）
+    // if shooting 
     if (is_shooting) {
       if (now - shoot_anim_start > 0.3) {
         is_shooting = false;

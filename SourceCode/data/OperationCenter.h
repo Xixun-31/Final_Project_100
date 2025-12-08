@@ -36,6 +36,7 @@ private:
   void _update_heroBullet();
   void _update_monster_heroBullet();
   void _update_monsterBullet();
+  void _update_hero_monsterBullet();
 
 private:
   void _draw_monster();

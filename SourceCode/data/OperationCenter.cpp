@@ -25,6 +25,7 @@ void OperationCenter::update() {
   _update_heroBullet();
   _update_monster_heroBullet();
   _update_monsterBullet();
+  _update_hero_monsterBullet();
 }
 
 void OperationCenter::_update_monster() {
@@ -93,6 +94,23 @@ void OperationCenter::_update_monster_heroBullet() {
   }
 }
 
+void OperationCenter::_update_hero_monsterBullet() {
+  DataCenter *DC = DataCenter::get_instance();
+  Hero *hero = DC->hero;
+  Player *player = DC->player;
+  std::vector<Bullet*>& bullets = DC->monsterBullets;
+  for (size_t i = 0; i < bullets.size(); ++i) {
+    // Check if the bullet overlaps with the hero.
+    if (hero->shape->overlap(*(bullets[i]->shape))) {
+      // Reduce the HP of the hero. Delete the bullet.
+      hero->hit();
+      delete bullets[i];
+      bullets.erase(bullets.begin() + i);
+      --i;
+    }
+  }
+}
+
 void OperationCenter::_update_monsterBullet() {
   std::vector<Bullet*>& bullets = DataCenter::get_instance()->monsterBullets;
 
@@ -134,7 +152,7 @@ void OperationCenter::_update_monster_player() {
       monsters[i]->special_ability(DC);
       // Monster gets killed. Player receives money.
       Point pos(monsters[i]->shape->center_x(), monsters[i]->shape->center_y());
-      if (monsters[i]->type == MonsterType::CAVEMAN) {
+      if (monsters[i]->peek_type() == MonsterType::CAVEMAN) {
           Effect::emit_SSR_death(pos);
       } else {
           Effect::emit_death(pos);

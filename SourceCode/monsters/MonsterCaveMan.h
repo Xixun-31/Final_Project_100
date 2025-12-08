@@ -17,12 +17,17 @@ public:
     bitmap_switch_freq = 20;
   }
   void special_ability(DataCenter* DC) override;
+  void update() override;
+  void draw() override;
 private:
   double last_shoot_time = 0;
   double shoot_cooldown = 1.5; // seconds
 
   bool is_shooting = false;
   double shoot_anim_start = 0.0; // seconds
+  double shoot_frame_duration = 0.08; // seconds
+  int shoot_frame_count = 3;
+  
 };
 
 #endif
