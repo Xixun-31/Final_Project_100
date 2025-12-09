@@ -7,6 +7,7 @@
 #include "shapes/Rectangle.h"
 #include <allegro5/allegro_primitives.h>
 #include <cstring>
+#include "Utils.h"
 
 namespace HeroSetting {
 static constexpr char Hero_images_root_path[40] = "./assets/image/hero/stable_";
@@ -409,7 +410,8 @@ void Hero::hit() {
   DataCenter *DC = DataCenter::get_instance();
   if (invincible_timer <= 0) {
     DC->player->HP--;
-    invincible_timer = 30; // Invincible for 30 frames
+    debug_log("Hero hit! HP after: %d\n", DC->player->HP);
+    invincible_timer = 60; // Invincible for 60 frames
     is_pain = true;
   }
 }

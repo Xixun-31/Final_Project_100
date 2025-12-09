@@ -187,7 +187,7 @@ bool Game::game_update() {
       debug_log("<Game> state: change to LEVEL\n");
       state = STATE::LEVEL;
       DC->level->init();
-      DC->player->HP = 5; // Reset HP
+      DC->player->reset(); // Reset HP
       DC->hero->init();   // Re-init hero to reset states
     }
     break;

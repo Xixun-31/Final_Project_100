@@ -21,7 +21,7 @@ public:
   void draw() override;
 private:
   double last_shoot_time = 0;
-  double shoot_cooldown = 1.5; // seconds
+  double shoot_cooldown = 0.1; // seconds
 
   bool is_shooting = false;
   double shoot_anim_start = 0.0; // seconds

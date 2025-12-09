@@ -227,8 +227,7 @@ void Monster::draw() {
     return;
   }
   if (bitmap_img_id < 0 || bitmap_img_id >= (int)frames.size()) {
-    debug_log("Monster::draw(): bitmap_img_id=%d out of range, reset to 0\n",
-              bitmap_img_id);
+      //debug_log("Monster::draw(): bitmap_img_id=%d out of range, reset to 0\n",bitmap_img_id);
     bitmap_img_id = 0;
   }
 
@@ -238,8 +237,7 @@ void Monster::draw() {
                MonsterSetting::dir_path_prefix[d],
                frames[bitmap_img_id]);
 
-  debug_log("Drawing monster of type %d, dir %d, frame index %d (file id %d)\n",
-            (int)type, d, bitmap_img_id, frames[bitmap_img_id]);
+  // debug_log("Drawing monster of type %d, dir %d, frame index %d (file id %d)\n",(int)type, d, bitmap_img_id, frames[bitmap_img_id]);
   ALLEGRO_BITMAP *bitmap = IC->get(buffer);
   al_draw_bitmap(bitmap, shape->center_x() - al_get_bitmap_width(bitmap) / 2,
                  shape->center_y() - al_get_bitmap_height(bitmap) / 2, 0);

@@ -136,6 +136,7 @@ void UI::draw() {
   // draw HP
   const int &game_field_length = DC->game_field_length;
   const int &player_HP = DC->player->HP;
+  
   int love_width = al_get_bitmap_width(love);
   for (int i = 1; i <= player_HP; ++i) {
     al_draw_bitmap(love,
