@@ -216,6 +216,13 @@ void MonsterCaveMan::update() {
     Monster::update();
 }
 
+void MonsterElite::update() {
+  DataCenter* DC = DataCenter::get_instance();
+  debug_log("HP of MonsterElite %d.\n", MonsterElite::HP);
+    _update_animation(DC);
+    _update_motion(DC);
+}
+
 void Monster::draw() {
  ImageCenter *IC = ImageCenter::get_instance();
   int d = static_cast<int>(dir);
@@ -246,10 +253,8 @@ void Monster::draw() {
 void MonsterCaveMan::draw() {
     if (is_shooting) {
         ImageCenter* IC = ImageCenter::get_instance();
-
         double now = al_get_time();
         double t = now - shoot_anim_start;
-
         // 算現在是第幾幀
         int frame = static_cast<int>(t / shoot_frame_duration);
 
@@ -259,7 +264,6 @@ void MonsterCaveMan::draw() {
             Monster::draw();
             return;
         }
-
         // 根據 frame 決定貼圖路徑
         std::string path =
             "./assets/image/monster/CaveMan/SHOOT_" + std::to_string(frame) + ".png";
@@ -276,8 +280,6 @@ void MonsterCaveMan::draw() {
     }
     Monster::draw();
 }
-
-
 
 int Monster::get_money() const { return money; }
 
@@ -341,3 +343,5 @@ void MonsterCaveMan::special_ability(DataCenter* DC) {
 
     DC->monsterBullets.push_back(b);
 }
+
+

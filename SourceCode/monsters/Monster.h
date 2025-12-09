@@ -4,6 +4,7 @@
 
 #include "../shapes/Point.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/Circle.h"
 #include <vector>
 
 class DataCenter;
