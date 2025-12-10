@@ -10,21 +10,21 @@ RM_OUT :=
 ifeq ($(OS), Windows_NT) 
     # Makefile 在 SourceCode，allegro/MinGW 在上一層
     ALLEGRO_PATH := ..
-    CC := ../MinGW/bin/g++
-    export Path := ../MinGW/bin;$(Path)
+    # 使用 MinGW/Bin 裡面的 G++
+    CC := $(ALLEGRO_PATH)/MinGW/bin/g++
+    # 將 MinGW/Bin 加入 PATH，讓它能找到 DLLs
+    export Path := $(ALLEGRO_PATH)/MinGW/bin;$(Path)
 
-    # -I 指 include 目錄，-L 指 lib 目錄，-l 指連結哪個 library
-    ALLEGRO_FLAGS_RELEASE := -I../allegro/include -L../allegro/lib -lallegro_monolith
+    # Allegro 連結旗標 (MinGW 不需要 -lallegro_monolith，只需 Allegro 的路徑)
+    ALLEGRO_FLAGS_RELEASE := -I$(ALLEGRO_PATH)/allegro/include -L$(ALLEGRO_PATH)/allegro/lib -lallegro_monolith
+    
     ALLEGRO_DLL_PATH_RELEASE := 
     ALLEGRO_FLAGS_DEBUG := $(ALLEGRO_FLAGS_RELEASE)
     ALLEGRO_DLL_PATH_DEBUG := 
 
-    RM_OBJ := $(foreach name, $(OBJ), del $(name) & )
-    ifeq ($(suffix $(OUT)),)
-        RM_OUT := del $(OUT).exe
-    else
-        RM_OUT := del $(OUT)
-    endif
+    # 【關鍵修正】: 刪除指令統一使用 rm -f (Linux/MinGW 語法)
+    RM_OBJ := rm -f $(OBJ)
+    RM_OUT := rm -f $(OUT).exe
 
 else 
     UNAME_S := $(shell uname -s)
