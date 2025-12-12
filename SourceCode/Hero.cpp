@@ -109,7 +109,7 @@ void Hero::init() {
     shape.reset(
         new Rectangle{DC->window_height / 2.0, DC->window_width / 2.0,
                       DC->window_height / 2.0 + al_get_bitmap_width(bitmap) / 2,
-                      DC->window_width / 2.0 + al_get_bitmap_height(bitmap)});
+                      DC->window_width / 2.0 + al_get_bitmap_height(bitmap) * 0.25});
   }
 }
 
