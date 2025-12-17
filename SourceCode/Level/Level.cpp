@@ -1,4 +1,5 @@
 #include "Level.h"
+#include "LevelConfig.h"
 #include "../Player.h"
 #include "../Utils.h"
 #include "../data/DataCenter.h"
@@ -9,6 +10,7 @@
 #include <allegro5/allegro_image.h>
 #include <array>
 #include <cstdio>
+#include "../monsters/Monster.h"
 
 using namespace std;
 
@@ -19,6 +21,8 @@ constexpr char level_map_format[] = "./assets/image/scene/Level%d.jpg";
 // 生怪間隔
 constexpr int monster_spawn_rate = 60;
 }; // namespace LevelSetting
+
+
 
 void Level::init() {
   DataCenter *DC = DataCenter::get_instance();
@@ -50,74 +54,154 @@ void Level::load_level(int lvl) {
 
   level = lvl;
   monster_spawn_counter = 0;
-
+  spawn_points.emplace_back(SpawnPoint{Point{0, 0}});
+  spawn_points.emplace_back(SpawnPoint{Point{0, DC->game_field_length}});
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, 0}});
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, DC->game_field_length}});
+  
   if (background) {
     al_destroy_bitmap(background);
     background = nullptr;
   }
 
-  // load map
-  char img_path[64];
-  sprintf(img_path, LevelSetting::level_map_format, lvl);
-  background = al_load_bitmap(img_path);
+  LevelConfig cfg = make_level_config(lvl);
+
+  background = al_load_bitmap(cfg.background_path.c_str());
   GAME_ASSERT(background != nullptr, "cannot load level background image.");
 
-  num_of_monsters.clear();
-  num_of_monsters.resize(static_cast<size_t>(MonsterType::MONSTERTYPE_MAX), 0);
+  waves.clear();
+  wave_idx = 0;
+  unit_idx = 0;
+  unit_left = 0;
 
-  switch (lvl) {
-  case 0: // level 0
+  if (lvl == 1) {
+      waves.push_back(Wave{
+          .units = {{MonsterType::WOLF, 1, 1, 0},
+                    {MonsterType::WOLF, 1, 1, 1},
+                    {MonsterType::WOLF, 1, 1, 2}, 
+                    {MonsterType::WOLF, 1, 1, 3}
+          },
+          .spawn_interval = 40,
+          .start_delay = 0,
+          .wait_until_clear = true
+      });
 
-    num_of_monsters[static_cast<size_t>(MonsterType::WOLF)] = 5;
-    num_of_monsters[static_cast<size_t>(MonsterType::CAVEMAN)] = 5;
-    break;
-  case 1: // level 1
-    num_of_monsters[static_cast<size_t>(MonsterType::WOLF)] = 2;
-    break;
-  case 2: // level 2
-    num_of_monsters[static_cast<size_t>(MonsterType::CAVEMAN)] = 2;
-    break;
-  case 3: // level 3
-    num_of_monsters[static_cast<size_t>(MonsterType::ELITE)] = 1;
-    break;
-  default:
-    break;
+      waves.push_back(Wave{
+          .units = {{MonsterType::CAVEMAN, 3}, {MonsterType::WOLF, 2}},
+          .spawn_interval = 30,
+          .start_delay = 120,  // 第二波前等2秒（假設60FPS）
+          .wait_until_clear = true
+      });
   }
+  if (lvl == 2) {
+      waves.push_back(Wave{
+      .units = {{MonsterType::CAVEMAN, 4}},
+      .spawn_interval = 50,
+      .start_delay = 60,
+      .wait_until_clear = true
+      });
+
+      waves.push_back(Wave{
+      .units = {{MonsterType::CAVEMAN, 2}, {MonsterType::WOLFKNIGHT, 2}},
+      .spawn_interval = 40,
+      .start_delay = 120,
+      .wait_until_clear = true
+      });
+  }
+  if (lvl == 3) {
+      waves.push_back(Wave{
+      .units = {{MonsterType::ELITE, 1}},
+      .spawn_interval = 1,
+      .start_delay = 60,
+      .wait_until_clear = true
+      });
+  }
+
+
+  // 如果你想每關 spawn_rate 不同：把 LevelSetting::monster_spawn_rate 改成成員變數 spawn_rate
+  // 目前你就先固定 60 也可以。
 
   debug_log("<Level> load level %d.\n", lvl);
 }
+
 
 /**
  * @brief 控制怪物出現的時機，照 num_of_monsters 決定要生哪種怪
  */
 void Level::update() {
-  // debug_log("Level::update(), counter = %d\n", monster_spawn_counter);
-  if (monster_spawn_counter) {
-    monster_spawn_counter--;
-    return;
-  }
+    DataCenter* DC = DataCenter::get_instance();
 
-  DataCenter *DC = DataCenter::get_instance();
+    if (wave_idx >= (int)waves.size()) return; // 全部波都生完了
 
-  if (num_of_monsters.empty())
-    return;
+    Wave& w = waves[wave_idx];
 
-  for (size_t i = 0; i < num_of_monsters.size(); ++i) {
-    if (num_of_monsters[i] == 0)
-      continue;
+    // 1) wave 開始延遲
+    if (start_delay_counter < w.start_delay) {
+        start_delay_counter++;
+        return;
+    }
 
-    // 這裡的 create_monster 版本要改成「不吃 road_path」
-    // 原本是 Monster::create_monster(type, road_path)
-    // 改成 Monster::create_monster(type) 或 Monster::create_monster(type,
-    // spawn_pos)
-    DC->monsters.emplace_back(
-        Monster::create_monster(static_cast<MonsterType>(i), Point{400, 300}));
-    num_of_monsters[i]--;
-    break;
-  }
+    // 2) 如果這波要求「等清場」：且這波生完了，場上還有怪，就等
+    //    判斷「這波生完」：unit_idx >= w.units.size()
+    bool wave_spawn_finished = (unit_idx >= w.units.size());
+    if (w.wait_until_clear && wave_spawn_finished) {
+        if (!DC->monsters.empty()) return; // 等怪清完
+        // 清完了 -> 進下一波
+        wave_idx++;
+        unit_idx = 0;
+        unit_left = 0;
+        start_delay_counter = 0;
+        monster_spawn_counter = 0;
+        return;
+    }
 
-  monster_spawn_counter = LevelSetting::monster_spawn_rate;
+    // 3) 生怪間隔
+    if (monster_spawn_counter > 0) {
+        monster_spawn_counter--;
+        return;
+    }
+
+    // 4) 如果目前這個 unit 沒初始化，初始化 unit_left
+    if (unit_left == 0) {
+        if (unit_idx >= w.units.size()) {
+            // 這波生完，但 wait_until_clear=false，那就直接下一波
+            wave_idx++;
+            unit_idx = 0;
+            unit_left = 0;
+            start_delay_counter = 0;
+            monster_spawn_counter = 0;
+            return;
+        }
+        unit_left = w.units[unit_idx].count;
+    }
+
+    // 5) 生怪（一次 burst 隻）
+    int k = std::min(w.units[unit_idx].burst, unit_left);
+
+    for (int i = 0; i < k; ++i) {
+        Point sp;
+
+        int pid = w.units[unit_idx].spawnPointId;
+
+        if (pid >= 0 && pid < (int)spawn_points.size()) {
+            sp = spawn_points[pid].pos;                // 固定點
+        } else {
+            // 輪流點（推薦，比 random 更好 debug）
+            static int rr = 0;
+            sp = spawn_points[rr % spawn_points.size()].pos;
+            rr++;
+        }
+
+        DC->monsters.emplace_back(Monster::create_monster(w.units[unit_idx].type, sp));
+    }
+
+    unit_left -= k;
+    if (unit_left == 0) unit_idx++;
+
+    monster_spawn_counter = w.spawn_interval;
+
 }
+
 
 /**
  * @brief 畫出整張關卡背景
@@ -132,3 +216,6 @@ void Level::draw() {
                         al_get_bitmap_height(background), 0, 0,
                         DC->window_width, DC->window_height, 0);
 }
+
+bool Level::all_waves_done() const { return wave_idx >= (int)waves.size(); }
+

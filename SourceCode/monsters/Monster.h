@@ -40,6 +40,7 @@ public:
   int HP;
   virtual void special_ability(DataCenter* DC);
   MonsterType peek_type() const;
+  
 protected:
   // 建構子：不再吃 path，只記住自己是什麼 type
   Monster(MonsterType type, const Point &p);

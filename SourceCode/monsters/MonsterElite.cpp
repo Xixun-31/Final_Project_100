@@ -44,6 +44,13 @@ MonsterElite::MonsterElite(const Point& p)
     }
 }
 
+void MonsterElite::update() {
+  DataCenter* DC = DataCenter::get_instance();
+  
+    _update_animation(DC);
+    _update_motion(DC);
+}
+
 void  MonsterElite::draw_centered_scaled(ALLEGRO_BITMAP* bmp,float x, float y, float scale) {
     float w = al_get_bitmap_width(bmp);
     float h = al_get_bitmap_height(bmp);

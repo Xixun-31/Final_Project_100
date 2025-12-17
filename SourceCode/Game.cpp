@@ -209,7 +209,7 @@ bool Game::game_update() {
       debug_log("<Game> state: change to PAUSE\n");
       state = STATE::PAUSE;
     }
-    if (DC->level->remain_monsters() == 0 && DC->monsters.size() == 0) {
+    if (DC->level->all_waves_done() && DC->monsters.size() == 0) {
       DC->level_counter++;
       if (DC->level_counter > 3) {
         debug_log("<Game> state: change to WIN\n");

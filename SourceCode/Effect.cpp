@@ -16,7 +16,7 @@ void Effect::emit_split(const Point& pos) {
     ee.type = EffectType::SPLIT;
     ee.pos = pos;
     ee.startTime = al_get_time();
-    ee.life = 0.2; // 特效持續時間（秒）
+    ee.life = 1.0; // 特效持續時間（秒）
 
     DC->effectEvents.push_back(ee);
 }
@@ -67,7 +67,6 @@ void Effect::draw_all() {
                 // 從 GIFCenter 取得動畫（建議 GIFCenter 內部有快取）
                 ALGIF_ANIMATION *anim = GC->get("assets/gif/effects/effect_split.gif");
 
-                double t = al_get_time() - ee.startTime;
                 ALLEGRO_BITMAP *frame = algif_get_bitmap(anim, t);
                 if (frame) {
                     int w = al_get_bitmap_width(frame);
@@ -79,7 +78,7 @@ void Effect::draw_all() {
                 }
 
                 // 如果超過 life 秒，就不再保留這個 event
-                if (t > ee.life) {
+                if (anim && t >= ee.life * anim->frames_count) {
                     remove_this = true;
                 }
                 break;
