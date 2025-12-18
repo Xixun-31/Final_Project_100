@@ -432,4 +432,17 @@ void Hero::hit() {
   }
 }
 
+double SECRET_X1 = 800;
+double SECRET_Y1 = 600;
+double SECRET_X2 = 750;
+double SECRET_Y2 = 550;
+
 bool Hero::is_invincible() { return invincible_timer > 0; }
+bool Hero::in_secret_zone() const {
+    DataCenter *DC = DataCenter::get_instance();
+    double hx = shape->center_x();
+    double hy = shape->center_y();
+
+    return (hx <= SECRET_X1 && hx >= SECRET_X2 &&
+            hy <= SECRET_Y1 && hy >= SECRET_Y2);
+}

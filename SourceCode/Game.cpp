@@ -27,6 +27,11 @@ constexpr char background_img_path[] = "./assets/image/StartBackground.jpg";
 constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg";
 constexpr char menu_image_path[] = "./assets/image/scene/Menu.jpg";
 
+static const double SECRET_X1 = 800;
+static const double SECRET_Y1 = 600;
+static const double SECRET_X2 = 750;
+static const double SECRET_Y2 = 550;
+
 /**
  * @brief Game entry.
  * @details The function processes all allegro events and update the event state
@@ -282,8 +287,33 @@ bool Game::game_update() {
         BGM_played = false;
       }
     }
+    // 按 E 才進（避免站著就瞬移）
+    if (DC->hero->in_secret_zone() &&
+        DC->key_state[ALLEGRO_KEY_E] && !DC->prev_key_state[ALLEGRO_KEY_E]) {
+
+      debug_log("<Game> enter secret level (LEVEL0)\n");
+      for (Monster *monster : DC->monsters) {
+        delete monster;
+      }
+      DC->monsters.clear();
+      for (Bullet *bullet : DC->heroBullets) {
+        delete bullet;
+      }
+      DC->heroBullets.clear();
+      state = STATE::LEVEL0;
+      DC->level->load_level(0);          // 0 = hidden level
+    }
     break;
   }
+  case STATE::LEVEL0: {
+  // 還沒弄  
+  // 玩家死了照樣輸
+  if (DC->player->HP <= 0){
+    state = STATE::LOSE;
+  }
+  break;
+}
+
   case STATE::PAUSE: {
     if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
       SC->toggle_playing(background);
@@ -367,14 +397,24 @@ void Game::game_draw() {
       DC->about->draw();
       break;
   }
+  case STATE::LEVEL0: 
   case STATE::LEVEL: {
     DC->level->draw();
     if(DC->portal) DC->portal->draw();
     DC->hero->draw();
     OC->draw();
     ui->draw();
+    
+    if (DC->hero->in_secret_zone()) {
+    al_draw_text(FC->caviar_dreams[FontSize::MEDIUM],
+               al_map_rgb(255,255,255),
+               DC->window_width / 2.0, 40,
+               ALLEGRO_ALIGN_CENTRE,
+               "Press E to enter Secret Level");
+    }
     break;
   }
+  
   case STATE::PAUSE: {
     // game layout cover
     al_draw_filled_rectangle(0, 0, DC->window_width, DC->window_height,
