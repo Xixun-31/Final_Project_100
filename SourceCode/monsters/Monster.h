@@ -41,6 +41,7 @@ enum class MonsterType {
     int HP;
     virtual void special_ability(DataCenter* DC);
     MonsterType peek_type() const;
+    void on_hit(const Point& from, double kb_strength);
     
   protected:
     // 建構子：不再吃 path，只記住自己是什麼 type
@@ -55,6 +56,11 @@ enum class MonsterType {
     int bitmap_switch_freq;
     std::vector<int> bitmap_img_ids[4];
     MonsterType type; 
+    
+    // hit
+    double hit_flash_timer = 0.0;   // 秒
+    double kb_vx = 0.0;             // 擊退速度 px/s
+    double kb_vy = 0.0;
   };
 
   #endif

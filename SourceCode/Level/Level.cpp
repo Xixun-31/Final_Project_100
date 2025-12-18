@@ -85,9 +85,9 @@ void Level::load_level(int lvl) {
 
       waves.push_back(Wave{
           .units = {{MonsterType::SLIME, 1, 1, 0},
-                    {MonsterType::WOLF, 1, 1, 1},
-                    {MonsterType::WOLF, 1, 1, 2}, 
-                    {MonsterType::WOLF, 1, 1, 3}
+                    {MonsterType::SUICIDE, 2, 1, 1},
+                    {MonsterType::SUICIDE, 2, 1, 2}, 
+                    {MonsterType::SLIME, 1, 1, 3}
           },
           .spawn_interval = 40,
           .start_delay = 0, // Starts immediately after Barrel wave (which is instant)
@@ -110,7 +110,7 @@ void Level::load_level(int lvl) {
       });
 
       waves.push_back(Wave{
-      .units = {{MonsterType::CAVEMAN, 2}, {MonsterType::WOLFKNIGHT, 2}},
+      .units = {{MonsterType::CAVEMAN, 2}, {MonsterType::SUICIDE, 2}},
       .spawn_interval = 40,
       .start_delay = 120,
       .wait_until_clear = true

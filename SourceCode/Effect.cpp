@@ -58,7 +58,18 @@ void Effect::emit_death(const Point& pos) {
     DC->effectEvents.push_back(ee);
 }
 
+void Effect::emit_suicide_explosion(const Point& pos) {
+    DataCenter* DC = DataCenter::get_instance();
 
+    EffectEvent ee;
+    ee.type = EffectType::SUICIDE_EXPLOSION;
+    ee.pos = pos;
+    ee.startTime = al_get_time();
+    ee.life = 0.5; // 特效持續時間（秒）
+    ee.frame = 0;
+    
+    DC->effectEvents.push_back(ee);
+}
 
 void Effect::emit_explosion(const Point& pos) {
     DataCenter* DC = DataCenter::get_instance();
@@ -142,9 +153,7 @@ void Effect::draw_all() {
 
             
                if (!(ee.life > 0.0) || std::isnan(ee.life) || std::isinf(ee.life) || ee.frame > 6) {
-                    // debug print
-                    printf("[Effect] bad life=%f type=%d start=%f now=%f\n",
-                        ee.life, (int)ee.type, ee.startTime, al_get_time());
+                    // debug p
                         remove_this = true;
                     break;
                 }
@@ -186,6 +195,27 @@ void Effect::draw_all() {
                      al_draw_bitmap(bmp, ee.pos.x - w/2, ee.pos.y - h/2, 0);
                  }
                  break;
+            }
+            case EffectType::SUICIDE_EXPLOSION: {
+                double duration_per_frame = 0.1;
+                int total_frames = 15;
+                
+                ee.frame = static_cast<int>(t / duration_per_frame);
+                
+                if (ee.frame > total_frames) {
+                    remove_this = true;
+                    break;
+                }
+                
+                std::string path = "assets/image/monster/Suicide/EX_" + std::to_string(ee.frame) + ".png";
+                ALLEGRO_BITMAP* bmp = IC->get(path);
+                
+                if (bmp) {
+                    int w = al_get_bitmap_width(bmp);
+                    int h = al_get_bitmap_height(bmp);
+                    al_draw_bitmap(bmp, ee.pos.x - w/2, ee.pos.y - h/2, 0);
+                }
+                break;
             }
             default:
                 break;

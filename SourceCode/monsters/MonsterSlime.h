@@ -7,7 +7,7 @@ class DataCenter;
 class MonsterSlime : public Monster {
 public:
   MonsterSlime(const Point &p) : Monster{MonsterType::SLIME, p} {
-    HP = 5;
+    HP = 1;
     v = 40;
     money = 20;
    

@@ -62,28 +62,20 @@ void MonsterElite::draw() {
     }
 
     if (!bmp) return;
-
-    draw_centered_scaled(bmp, shape->center_x(), shape->center_y(), 0.65f);
+    float x = shape->center_x() - al_get_bitmap_width(bmp) / 2;
+    float y = shape->center_y() - al_get_bitmap_height(bmp) / 2;
+    al_draw_bitmap(bmp, x, y, 0); 
+      
+    if (hit_flash_timer > 0) {
+      // 紅色偏亮，alpha=1 代表完全不透明
+      ALLEGRO_COLOR tint = al_map_rgba_f(1.0, 0.3, 0.3, 1.0);
+      al_draw_tinted_bitmap(bmp, tint, x, y, 0);
+    } else {
+      al_draw_bitmap(bmp, x, y, 0);
+    }
 
 }
 
-void  MonsterElite::draw_centered_scaled(ALLEGRO_BITMAP* bmp,float x, float y, float scale) {
-    float w = al_get_bitmap_width(bmp);
-    float h = al_get_bitmap_height(bmp);
-
-    float new_w = w * scale;
-    float new_h = h * scale;
-
-    al_draw_scaled_bitmap(
-        bmp,
-        0, 0, w, h,
-        x - new_w / 2,
-        y - new_h / 2,
-        new_w,
-        new_h,
-        0
-    );
-}
 
 
 void MonsterElite::special_ability(DataCenter* DC) {
@@ -174,6 +166,23 @@ void MonsterElite::_enter_dash_toward_hero(DataCenter* DC) {
 void MonsterElite::_update_animation(DataCenter* DC) {
     double dt = 1.0 / DC->FPS;
     anim_timer += dt;
+    // --- 擊退位移 ---
+    if (std::abs(kb_vx) > 1e-3 || std::abs(kb_vy) > 1e-3) {
+        shape->update_center_x(shape->center_x() + kb_vx * dt);
+        shape->update_center_y(shape->center_y() + kb_vy * dt);
+
+        // 阻尼衰減（數字越小衰減越快）
+        kb_vx *= 0.85;
+        kb_vy *= 0.85;
+
+        // 小到一定程度就歸零
+        if (std::abs(kb_vx) < 5) kb_vx = 0;
+        if (std::abs(kb_vy) < 5) kb_vy = 0;
+    }
+
+    // --- 受傷閃紅計時 ---
+    if (hit_flash_timer > 0) hit_flash_timer -= dt;
+    if (hit_flash_timer < 0) hit_flash_timer = 0;
 
     double frame_dt;
     int frame_count;
