@@ -182,6 +182,8 @@ void OperationCenter::_update_monster_player() {
       Point pos(monsters[i]->shape->center_x(), monsters[i]->shape->center_y());
       if (monsters[i]->peek_type() == MonsterType::CAVEMAN) {
           Effect::emit_SSR_death(pos);
+      } else if (monsters[i]->peek_type() == MonsterType::WOLF || monsters[i]->peek_type() == MonsterType::BARREL) {
+          // Wolf/Barrel triggers their own effects in special_ability
       } else {
           Effect::emit_death(pos);
       }

@@ -17,7 +17,7 @@ using namespace std;
 // fixed settings
 namespace LevelSetting {
 // 背景圖路徑，依照 level 編號來載入
-constexpr char level_map_format[] = "./assets/image/scene/Level%d.jpg";
+constexpr char level_map_format[] = "./assets/image/scene/Level%d.png";
 // 生怪間隔
 constexpr int monster_spawn_rate = 60;
 }; // namespace LevelSetting
@@ -58,6 +58,7 @@ void Level::load_level(int lvl) {
   spawn_points.emplace_back(SpawnPoint{Point{0, DC->game_field_length}});
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, 0}});
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, DC->game_field_length}});
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2, DC->game_field_length / 2}}); // Index 4: Center
   
   if (background) {
     al_destroy_bitmap(background);
@@ -76,13 +77,20 @@ void Level::load_level(int lvl) {
 
   if (lvl == 1) {
       waves.push_back(Wave{
+          .units = {{MonsterType::BARREL, 1, 1, 4}}, // Wave 0: Barrel (Center)
+          .spawn_interval = 0,
+          .start_delay = 0,
+          .wait_until_clear = false // Don't wait for barrel
+      });
+
+      waves.push_back(Wave{
           .units = {{MonsterType::WOLF, 1, 1, 0},
                     {MonsterType::WOLF, 1, 1, 1},
                     {MonsterType::WOLF, 1, 1, 2}, 
                     {MonsterType::WOLF, 1, 1, 3}
           },
           .spawn_interval = 40,
-          .start_delay = 0,
+          .start_delay = 0, // Starts immediately after Barrel wave (which is instant)
           .wait_until_clear = true
       });
 
@@ -145,7 +153,16 @@ void Level::update() {
     //    判斷「這波生完」：unit_idx >= w.units.size()
     bool wave_spawn_finished = (unit_idx >= w.units.size());
     if (w.wait_until_clear && wave_spawn_finished) {
-        if (!DC->monsters.empty()) return; // 等怪清完
+        // if (!DC->monsters.empty()) return; // Old check
+        // Ignore Barrel for wait_until_clear
+        bool has_blocking_monsters = false;
+        for(auto* m : DC->monsters) {
+            if(m->peek_type() != MonsterType::BARREL) {
+                has_blocking_monsters = true;
+                break;
+            }
+        }
+        if (has_blocking_monsters) return;
         // 清完了 -> 進下一波
         wave_idx++;
         unit_idx = 0;

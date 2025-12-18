@@ -73,7 +73,7 @@ void MonsterCaveMan::special_ability(DataCenter* DC) {
 
     double speed = 300.0;     // 子彈速度
     int dmg      = 3;         // 傷害
-    double range = 500.0;     // 射程
+    double range = 2500.0;     // 射程 (Increased to cover map)
 
     // Bullet 只需要一個「方向」用的 target，我們可以用 hero 位置就好
     Bullet* b = new Bullet(

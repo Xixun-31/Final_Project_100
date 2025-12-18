@@ -4,6 +4,7 @@
 #include "../Menu.h"
 #include "../Player.h"
 #include "../Win.h"
+#include "../About.h"
 #include "../monsters/Monster.h"
 #include "../towers/Bullet.h"
 #include "../towers/Tower.h"
@@ -33,6 +34,8 @@ DataCenter::DataCenter() {
   menu = new Menu();
   win = new Win();
   lose = new Lose();
+  about = new About();
+  portal = nullptr;
   level_counter = 1;
   curr_level = -1;
 }
@@ -44,6 +47,7 @@ DataCenter::~DataCenter() {
   delete menu;
   delete win;
   delete lose;
+  delete about;
   for (Monster *&m : monsters) {
     delete m;
   }

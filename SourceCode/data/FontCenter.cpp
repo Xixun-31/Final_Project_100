@@ -5,7 +5,7 @@
 namespace FontSetting {
 const char caviar_dreams_font_path[] = "./assets/font/Caviar_Dreams_Bold.ttf";
 const char courier_new_font_path[] = "./assets/font/courbd.ttf";
-const char consolas_font_path[] = "./assets/font/Consolas.ttf";
+const char consolas_font_path[] = "./assets/font/04B_03__.TTF";
 } // namespace FontSetting
 
 void FontCenter::init() {

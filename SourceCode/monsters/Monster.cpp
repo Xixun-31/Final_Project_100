@@ -9,6 +9,7 @@
 #include "MonsterWolf.h"
 #include "MonsterWolfKnight.h"
 #include "MonsterSmallWolf.h"
+#include "MonsterBarrel.h"
 
 
 #include "../Hero.h" 
@@ -38,7 +39,7 @@ static constexpr char monster_imgs_root_path[static_cast<int>(
     // 之後要實作再打開
     "./assets/image/monster/Bird", "./assets/image/monster/Elite",
     "./assets/image/monster/Slime", "./assets/image/monster/Split",
-    "./assets/image/monster/Suicide"};
+    "./assets/image/monster/Suicide", "./assets/image/monster/barrel"};
 
 static constexpr char dir_path_prefix[][10] = {"UP", "DOWN", "LEFT", "RIGHT"};
 } // namespace MonsterSetting
@@ -68,6 +69,8 @@ Monster *Monster::create_monster(MonsterType type, const Point &p) {
     return new MonsterSplit{p};
   case MonsterType::SUICIDE:
     return new MonsterSuicide{p};
+  case MonsterType::BARREL:
+    return new MonsterBarrel{p};
   case MonsterType::MONSTERTYPE_MAX:
     break;
   }

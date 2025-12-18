@@ -8,6 +8,7 @@ public:
   void reset();
   int HP;
   int coin;
+  bool is_god_mode; // God Mode flag
 
 private:
   int coin_freq;

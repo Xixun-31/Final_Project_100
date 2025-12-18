@@ -9,7 +9,7 @@ enum class EffectType {
     SSR_DEATH,
     DEATH,
     // 之後要加更多特效就加在這裡，例如：
-    // EXPLOSION,
+    EXPLOSION,
     // ICE,
     // HEAL,
 };
@@ -33,6 +33,8 @@ namespace Effect {
     void emit_SSR_death(const Point& pos); 
     // 產生一個「死亡」特效（一般怪物死亡用）
     void emit_death(const Point& pos);
+    // 產生爆炸特效
+    void emit_explosion(const Point& pos);
 }
 
 

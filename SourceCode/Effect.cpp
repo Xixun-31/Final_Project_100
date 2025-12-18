@@ -46,6 +46,20 @@ void Effect::emit_death(const Point& pos) {
     DC->effectEvents.push_back(ee);
 }
 
+void Effect::emit_explosion(const Point& pos) {
+    DataCenter* DC = DataCenter::get_instance();
+
+    EffectEvent ee;
+    ee.type = EffectType::EXPLOSION;
+    ee.pos = pos;
+    ee.startTime = al_get_time();
+    ee.frame = 0;
+    ee.life = 0.5; // Roughly enough for 8 frames if fast, or adjust based on frames
+    // 8 frames, maybe 0.1s per frame? total 0.8s. Let's strictly control via frame count
+    
+    DC->effectEvents.push_back(ee);
+}
+
 
 
 // 每幀畫出特效，超過 life 秒就刪掉
@@ -67,6 +81,14 @@ void Effect::draw_all() {
                 // 從 GIFCenter 取得動畫（建議 GIFCenter 內部有快取）
                 ALGIF_ANIMATION *anim = GC->get("assets/gif/effects/effect_split.gif");
 
+                if (!anim) break;
+
+                // Calculate actual total duration of the GIF
+                double total_duration = 0.0;
+                for (int i = 0; i < anim->frames_count; ++i) {
+                     total_duration += algif_get_frame_duration(anim, i);
+                }
+
                 ALLEGRO_BITMAP *frame = algif_get_bitmap(anim, t);
                 if (frame) {
                     int w = al_get_bitmap_width(frame);
@@ -77,8 +99,8 @@ void Effect::draw_all() {
                                    0);
                 }
 
-                // 如果超過 life 秒，就不再保留這個 event
-                if (anim && t >= ee.life * anim->frames_count) {
+                // Play exactly once
+                if (t >= total_duration) {
                     remove_this = true;
                 }
                 break;
@@ -103,27 +125,33 @@ void Effect::draw_all() {
                 break;
             }
             case EffectType::DEATH: {
-                /*
-                // 從 GIFCenter 取得動畫（建議 GIFCenter 內部有快取）
-                ALGIF_ANIMATION *anim = GC->get("assets/gif/effects/effect_death.gif");
-
-                double t = al_get_time() - ee.startTime;
-                ALLEGRO_BITMAP *frame = algif_get_bitmap(anim, t);
-                if (frame) {
-                    int w = al_get_bitmap_width(frame);
-                    int h = al_get_bitmap_height(frame);
-                    al_draw_bitmap(frame,
-                                   ee.pos.x - w / 2,
-                                   ee.pos.y - h / 2,
-                                   0);
-                }
-
-                // 如果超過 life 秒，就不再保留這個 event
-                if (t > ee.life) {
-                    remove_this = true;
-                }
+                // Currently empty/commented out. 
+                // If it falls through, it hits EXPLOSION.
+                // Added break to prevent fallthrough.
                 break;
-                */
+            }
+            case EffectType::EXPLOSION: {
+                 // 8 frames: explosion_1 ~ explosion_8
+                 // duration per frame: 0.1s => total 0.8s
+                 double duration_per_frame = 0.1;
+                 int total_frames = 8;
+                 
+                 ee.frame = static_cast<int>(t / duration_per_frame);
+                 
+                 if (ee.frame >= total_frames) {
+                     remove_this = true;
+                     break;
+                 }
+                 
+                 std::string path = "assets/image/monster/barrel/explosion_" + std::to_string(ee.frame + 1) + ".png";
+                 ALLEGRO_BITMAP* bmp = IC->get(path);
+                 
+                 if (bmp) {
+                     int w = al_get_bitmap_width(bmp);
+                     int h = al_get_bitmap_height(bmp);
+                     al_draw_bitmap(bmp, ee.pos.x - w/2, ee.pos.y - h/2, 0);
+                 }
+                 break;
             }
             default:
                 break;
