@@ -9,19 +9,20 @@
 
   class DataCenter;
 
-  enum class MonsterType {
-    WOLF,
-    SMALLWOLF,
-    CAVEMAN,
-    WOLFKNIGHT,
-    DEMONNINJA,
-    BIRD,
-    ELITE,
-    SLIME,
-    SPLIT,
-    SUICIDE,
-    MONSTERTYPE_MAX
-  };
+enum class MonsterType {
+  WOLF,
+  SMALLWOLF,
+  CAVEMAN,
+  WOLFKNIGHT,
+  DEMONNINJA,
+  BIRD,
+  ELITE,
+  SLIME,
+  SPLIT,
+  SUICIDE,
+  BARREL,
+  MONSTERTYPE_MAX
+};
 
   enum class Dir { UP, DOWN, LEFT, RIGHT };
 

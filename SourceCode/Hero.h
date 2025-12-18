@@ -39,6 +39,7 @@ private:
   std::vector<std::string> prepare_img;
   std::string slide_img;
   std::string pain_img;
+  std::string pain_img2; // Added pain_2
   std::string delay_img;
 
   int animation_tick = 0;
@@ -48,6 +49,7 @@ private:
   int attack_anim_timer = 0;
   int death_anim_timer = 0;
   bool is_pain = false;
+  int pain_anim_timer = 0; // Timer for pain animation
 
   double speed = 3;
   int counter = 0;
@@ -57,6 +59,7 @@ private:
   int roll_duration = 15;
   int roll_cd = 0;
   int roll_cd_duration = 60;
+  int attack_lock_timer = 0; // Lock attack on spawn
   int roll_delay_timer = 0;
   int roll_delay_duration = 20; // Stiffness after roll
   double roll_speed = 8.0;

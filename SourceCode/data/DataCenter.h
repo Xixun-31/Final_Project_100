@@ -22,6 +22,8 @@ class Level2;
 class Level3;
 class Win;
 class Lose;
+class About;
+class Portal;
 
 /**
  * @brief Stores generic global data and relatively small data structures.
@@ -124,6 +126,8 @@ public:
   Level3 *level3;
   Win *win;
   Lose *lose;
+  About *about;
+  Portal *portal; // Added Portal
   int level_counter;
   int curr_level;
 

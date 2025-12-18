@@ -82,7 +82,7 @@ void MonsterElite::special_ability(DataCenter* DC) {
 
         double bullet_speed = 260.0;
         int    dmg          = 5;
-        double fly_dist     = 800.0;
+        double fly_dist     = 2500.0; // Increased to cover map
 
         Bullet* b = new Bullet(
             from,

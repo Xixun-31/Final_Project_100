@@ -73,7 +73,8 @@ void Hero::init() {
     dead_img.push_back("./assets/image/hero/dead" + std::to_string(j) + ".png");
   }
   slide_img = "./assets/image/hero/slide.png";
-  pain_img = "./assets/image/hero/pain.png";
+  pain_img = "./assets/image/hero/pain_1.png";
+  pain_img2 = "./assets/image/hero/pain_2.png";
   delay_img = "./assets/image/hero/delay.png";
   prepare_img.clear();
   boom_img.clear();
@@ -85,6 +86,7 @@ void Hero::init() {
   is_attacking = false;
   is_dying = false;
   is_pain = false;
+  pain_anim_timer = 0;
   is_reloading = false;
   is_bombing = false;
   bomb_timer = 0;
@@ -100,6 +102,7 @@ void Hero::init() {
   invincible_timer = 0;
   roll_timer = 0;
   roll_cd = 0;
+  attack_lock_timer = 30; // Lock for 0.5s to prevent accidental click
   roll_delay_timer = 0;
 
   ImageCenter *IC = ImageCenter::get_instance();
@@ -134,8 +137,10 @@ void Hero::update() {
     // Don't return, allow movement
   }
 
+  if(attack_lock_timer > 0) attack_lock_timer--;
+
   // Bomb activation
-  if (DC->key_state[ALLEGRO_KEY_B] && !DC->prev_key_state[ALLEGRO_KEY_B]) {
+  if (DC->mouse_state[2] && !DC->prev_mouse_state[2]) {
     activate_bomb();
   }
 
@@ -150,7 +155,12 @@ void Hero::update() {
     invincible_timer--;
     if (invincible_timer == 0) {
       is_pain = false;
+      pain_anim_timer = 0;
     }
+  }
+
+  if (is_pain) {
+      pain_anim_timer++;
   }
 
   // Death animation logic (check HP)
@@ -337,7 +347,12 @@ void Hero::draw() {
   } else if (roll_timer > 0) {
     bitmap = IC->get(slide_img);
   } else if (is_pain) {
-    bitmap = IC->get(pain_img);
+    // Alternate every 6 frames (approx 0.1s at 60FPS)
+    if ((pain_anim_timer / 6) % 2 == 0) {
+        bitmap = IC->get(pain_img);
+    } else {
+        bitmap = IC->get(pain_img2);
+    }
   } else if (is_attacking) {
     bitmap = IC->get(shoot_img[animation_frame]);
   } else if (is_moving) {
@@ -357,7 +372,7 @@ void Hero::draw() {
 }
 
 void Hero::attack() {
-  if (is_attacking || counter > 0 || is_reloading)
+  if (is_attacking || counter > 0 || is_reloading || attack_lock_timer > 0)
     return;
   if (ammo <= 0) {
     reload();
@@ -373,9 +388,9 @@ void Hero::attack() {
   // I'll use "./assets/image/tower/Arcane_Beam.png" as a safe bet if it exists,
   // or better, let's check ImageCenter or TowerSetting.
   // Actually, let's just use a hardcoded path for now and user can change it.
-  DC->heroBullets.emplace_back(
-      new HeroBullet(Point{shape->center_x(), shape->center_y()}, DC->mouse,
-                     "./assets/image/tower/Arcane_Beam.png", 500, 5, 400));
+   DC->heroBullets.emplace_back(
+       new HeroBullet(Point{shape->center_x(), shape->center_y()}, DC->mouse,
+                      "./assets/image/tower/Arcane_Beam.png", 500, 5, 2500)); // Increased range
 
   ammo--;
   counter = attack_freq;
@@ -409,6 +424,7 @@ void Hero::activate_bomb() {
 void Hero::hit() {
   DataCenter *DC = DataCenter::get_instance();
   if (invincible_timer <= 0) {
+    if(DC->player->is_god_mode) return; // God Mode check
     DC->player->HP--;
     debug_log("Hero hit! HP after: %d\n", DC->player->HP);
     invincible_timer = 60; // Invincible for 60 frames

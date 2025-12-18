@@ -138,25 +138,29 @@ void UI::draw() {
   const int &player_HP = DC->player->HP;
   
   int love_width = al_get_bitmap_width(love);
-  for (int i = 1; i <= player_HP; ++i) {
-    al_draw_bitmap(love,
-                   game_field_length - (love_width + love_img_padding) * i,
-                   love_img_padding, 0);
+  // int love_width = al_get_bitmap_width(love);
+  int love_height = al_get_bitmap_height(love);
+  float scale = 1.6f; // Slightly enlarge
+  for (int i = 0; i < player_HP; ++i) {
+      al_draw_scaled_bitmap(love, 0, 0, love_width, love_height,
+          love_img_padding + (love_width * scale + love_img_padding) * i,
+          love_img_padding,
+          love_width * scale, love_height * scale, 0);
   }
   // draw coin
-  const int &player_coin = DC->player->coin;
-  al_draw_textf(FC->courier_new[FontSize::MEDIUM], al_map_rgb(0, 0, 0),
-                game_field_length + love_img_padding, love_img_padding,
-                ALLEGRO_ALIGN_LEFT, "coin: %5d", player_coin);
+  // const int &player_coin = DC->player->coin;
+  // al_draw_textf(FC->consolas[FontSize::MEDIUM], al_map_rgb(0, 0, 0),
+  //               game_field_length + love_img_padding, love_img_padding,
+  //               ALLEGRO_ALIGN_LEFT, "coin: %5d", player_coin);
 
   // Draw ammo
   Hero *hero = DC->hero;
-  al_draw_textf(FC->courier_new[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
+  al_draw_textf(FC->consolas[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
                 DC->window_width - 150, DC->window_height - 50,
                 ALLEGRO_ALIGN_LEFT, "Ammo: %d/%d", hero->get_ammo(), 10);
 
   // Draw bomb count
-  al_draw_textf(FC->courier_new[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
+  al_draw_textf(FC->consolas[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
                 love_img_padding, love_img_padding + 40, ALLEGRO_ALIGN_LEFT,
                 "Bomb: %d", hero->get_bomb_count());
 
@@ -178,42 +182,42 @@ void UI::draw() {
     static Tower *selected_tower = nullptr;
   case STATE::HALT: {
     // No tower should be selected for HALT state.
-    if (selected_tower != nullptr) {
-      delete selected_tower;
-      selected_tower = nullptr;
-    }
-    break;
+    // if (selected_tower != nullptr) {
+    //   delete selected_tower;
+    //   selected_tower = nullptr;
+    // }
+    // break;
   }
   case STATE::HOVER: {
-    auto &[bitmap, p, price] = tower_items[on_item];
-    int w = al_get_bitmap_width(bitmap);
-    int h = al_get_bitmap_height(bitmap);
-    // Create a semitransparent mask covered on the hovered tower.
-    al_draw_filled_rectangle(p.x, p.y, p.x + w, p.y + h,
-                             al_map_rgba(50, 50, 50, 64));
-    break;
+    // auto &[bitmap, p, price] = tower_items[on_item];
+    // int w = al_get_bitmap_width(bitmap);
+    // int h = al_get_bitmap_height(bitmap);
+    // // Create a semitransparent mask covered on the hovered tower.
+    // al_draw_filled_rectangle(p.x, p.y, p.x + w, p.y + h,
+    //                          al_map_rgba(50, 50, 50, 64));
+    // break;
   }
   case STATE::SELECT: {
-    // If a tower is selected, we new a corresponding tower for previewing
-    // purpose.
-    if (selected_tower == nullptr) {
-      selected_tower =
-          Tower::create_tower(static_cast<TowerType>(on_item), mouse);
-    } else {
-      selected_tower->shape->update_center_x(mouse.x);
-      selected_tower->shape->update_center_y(mouse.y);
-    }
+    // // If a tower is selected, we new a corresponding tower for previewing
+    // // purpose.
+    // if (selected_tower == nullptr) {
+    //   selected_tower =
+    //       Tower::create_tower(static_cast<TowerType>(on_item), mouse);
+    // } else {
+    //   selected_tower->shape->update_center_x(mouse.x);
+    //   selected_tower->shape->update_center_y(mouse.y);
+    // }
   }
   case STATE::PLACE: {
-    // If we select a tower from menu, we need to preview where the tower will
-    // be built and its attack range.
-    ALLEGRO_BITMAP *bitmap = Tower::get_bitmap(static_cast<TowerType>(on_item));
-    al_draw_filled_circle(mouse.x, mouse.y, selected_tower->attack_range(),
-                          al_map_rgba(255, 0, 0, 32));
-    int w = al_get_bitmap_width(bitmap);
-    int h = al_get_bitmap_height(bitmap);
-    al_draw_bitmap(bitmap, mouse.x - w / 2, mouse.y - h / 2, 0);
-    break;
+    // // If we select a tower from menu, we need to preview where the tower will
+    // // be built and its attack range.
+    // ALLEGRO_BITMAP *bitmap = Tower::get_bitmap(static_cast<TowerType>(on_item));
+    // al_draw_filled_circle(mouse.x, mouse.y, selected_tower->attack_range(),
+    //                       al_map_rgba(255, 0, 0, 32));
+    // int w = al_get_bitmap_width(bitmap);
+    // int h = al_get_bitmap_height(bitmap);
+    // al_draw_bitmap(bitmap, mouse.x - w / 2, mouse.y - h / 2, 0);
+    // break;
   }
   }
 }

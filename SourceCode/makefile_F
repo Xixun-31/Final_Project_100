@@ -23,8 +23,8 @@ ifeq ($(OS), Windows_NT)
     ALLEGRO_DLL_PATH_DEBUG := 
 
     # 【關鍵修正】: 刪除指令統一使用 rm -f (Linux/MinGW 語法)
-    RM_OBJ := rm -f $(OBJ)
-    RM_OUT := rm -f $(OUT).exe
+    RM_OBJ := -del /Q $(OBJ) 2>nul
+    RM_OUT := -del /Q $(OUT).exe 2>nul
 
 else 
     UNAME_S := $(shell uname -s)

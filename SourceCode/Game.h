@@ -35,6 +35,7 @@ private:
     LEVEL3,
     LEVEL, // -> PAUSE, END
     PAUSE, // -> LEVEL
+    ABOUT,
     END,
     WIN,
     LOSE
