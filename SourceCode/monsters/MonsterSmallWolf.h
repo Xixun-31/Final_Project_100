@@ -2,7 +2,7 @@
 #define MONSTERSMALLWOLF_H_INCLUDED
 
 #include "Monster.h"
-
+class DataCenter;
 class MonsterSmallWolf : public Monster {
 public:
   MonsterSmallWolf(const Point &p) : Monster{MonsterType::SMALLWOLF, p} {
@@ -14,6 +14,7 @@ public:
     bitmap_img_ids[(int)Dir::RIGHT] = {0, 1, 2, 3, 4, 5, 6, 7}; // RIGHT
     bitmap_switch_freq = 20;
   }
+  void special_ability(DataCenter* DC) override;
 };
 
 #endif

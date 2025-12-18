@@ -112,7 +112,6 @@ void Effect::draw_all() {
                                    ee.pos.y - h / 2,
                                    0);
                 }
-
                 // Play exactly once
                 if (t >= total_duration) {
                     remove_this = true;
@@ -142,15 +141,16 @@ void Effect::draw_all() {
                 ee.frame = static_cast<int>(t / ee.life);
 
             
-                if (ee.frame >= DEATH_FRAMES) {
-                    remove_this = true;
+               if (!(ee.life > 0.0) || std::isnan(ee.life) || std::isinf(ee.life) || ee.frame > 6) {
+                    // debug print
+                    printf("[Effect] bad life=%f type=%d start=%f now=%f\n",
+                        ee.life, (int)ee.type, ee.startTime, al_get_time());
+                        remove_this = true;
                     break;
                 }
 
                 std::string path = "assets/image/monster/Slime/DEATH_" + std::to_string(ee.frame) + ".png";
                 ALLEGRO_BITMAP* bmp = IC->get(path);  
-
-
                 if (bmp) {
                     int w = al_get_bitmap_width(bmp);
                     int h = al_get_bitmap_height(bmp);
