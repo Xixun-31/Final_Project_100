@@ -67,7 +67,7 @@ void Effect::draw_all() {
                 // 從 GIFCenter 取得動畫（建議 GIFCenter 內部有快取）
                 ALGIF_ANIMATION *anim = GC->get("assets/gif/effects/effect_split.gif");
 
-                ALLEGRO_BITMAP *frame = algif_get_bitmap(anim, t);
+                ALLEGRO_BITMAP *frame = algif_get_bitmap(anim, t * 0.5); // 播 0.5 倍速
                 if (frame) {
                     int w = al_get_bitmap_width(frame);
                     int h = al_get_bitmap_height(frame);
@@ -78,7 +78,7 @@ void Effect::draw_all() {
                 }
 
                 // 如果超過 life 秒，就不再保留這個 event
-                if (anim && t >= ee.life * anim->frames_count) {
+                if (t >= ee.life) {
                     remove_this = true;
                 }
                 break;

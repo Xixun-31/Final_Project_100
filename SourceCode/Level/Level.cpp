@@ -54,10 +54,10 @@ void Level::load_level(int lvl) {
 
   level = lvl;
   monster_spawn_counter = 0;
-  spawn_points.emplace_back(SpawnPoint{Point{0, 0}});
-  spawn_points.emplace_back(SpawnPoint{Point{0, DC->game_field_length}});
-  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, 0}});
-  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, DC->game_field_length}});
+  spawn_points.emplace_back(SpawnPoint{Point{100, 100}});
+  spawn_points.emplace_back(SpawnPoint{Point{100, DC->game_field_length - 100}});
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length - 100, 100}});
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length - 100, DC->game_field_length - 100}});
   
   if (background) {
     al_destroy_bitmap(background);
@@ -76,7 +76,7 @@ void Level::load_level(int lvl) {
 
   if (lvl == 1) {
       waves.push_back(Wave{
-          .units = {{MonsterType::WOLF, 1, 1, 0},
+          .units = {{MonsterType::SLIME, 1, 1, 0},
                     {MonsterType::WOLF, 1, 1, 1},
                     {MonsterType::WOLF, 1, 1, 2}, 
                     {MonsterType::WOLF, 1, 1, 3}

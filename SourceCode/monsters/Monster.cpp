@@ -33,7 +33,7 @@ using namespace std;
 namespace MonsterSetting {
 static constexpr char monster_imgs_root_path[static_cast<int>(
     MonsterType::MONSTERTYPE_MAX)][40] = {
-    "./assets/image/monster/Wolf","./assets/image/monster/Wolf","./assets/image/monster/CaveMan",
+    "./assets/image/monster/Wolf","./assets/image/monster/Slime","./assets/image/monster/CaveMan",
     "./assets/image/monster/WolfKnight", "./assets/image/monster/DemonNinja",
     // 之後要實作再打開
     "./assets/image/monster/Bird", "./assets/image/monster/Elite",
@@ -114,16 +114,32 @@ Monster::Monster(MonsterType type, const Point &p) {
 /**
  * @details 更新：動畫 → 追玩家移動 → 更新 hitbox
  */
+
+static int pick_draw_dir(const std::vector<int> bitmap_img_ids[4], int want_dir) {
+    if (!bitmap_img_ids[want_dir].empty()) return want_dir;
+
+    // fallback 順序你可調：先用 DOWN，再 RIGHT，再 LEFT，再 UP
+    const int order[4] = {(int)Dir::DOWN, (int)Dir::RIGHT, (int)Dir::LEFT, (int)Dir::UP};
+    for (int d : order) {
+        if (!bitmap_img_ids[d].empty()) return d;
+    }
+    return want_dir; // 全空才會回到原本（但這代表你根本沒設圖）
+}
+
+
 void Monster::update() {
     DataCenter *DC = DataCenter::get_instance();
     ImageCenter *IC = ImageCenter::get_instance();
     // 1. 更新動畫（先拿出該方向的 frame 列表）
-    int d = static_cast<int>(dir);
-  auto &frames = bitmap_img_ids[d];
+    int want_dir = (int)dir;
+int draw_dir = pick_draw_dir(bitmap_img_ids, want_dir);
+auto &frames = bitmap_img_ids[draw_dir];
+
+
 
   if (frames.empty()) {
     debug_log("Monster::update(): no frames for type=%d dir=%d\n",
-              (int)type, d);
+              (int)type, draw_dir);
     // 沒有對這個方向設定任何 frame，先不要更新動畫，避免崩潰
     bitmap_img_id = 0;
   } else {
@@ -191,10 +207,15 @@ void Monster::update() {
 
   // 4. 更新 hitbox
   char buffer[50];
-  std::sprintf(buffer, "%s/%s_%d.png",
-               MonsterSetting::monster_imgs_root_path[static_cast<int>(type)],
-               MonsterSetting::dir_path_prefix[static_cast<int>(dir)],
-               bitmap_img_ids[static_cast<int>(dir)][bitmap_img_id]);
+ int want_dir2 = (int)dir;
+int draw_dir2 = pick_draw_dir(bitmap_img_ids, want_dir2);
+
+std::sprintf(buffer, "%s/%s_%d.png",
+    MonsterSetting::monster_imgs_root_path[(int)type],
+    MonsterSetting::dir_path_prefix[draw_dir2],
+    bitmap_img_ids[draw_dir2][bitmap_img_id]);
+
+
   ALLEGRO_BITMAP *bitmap = IC->get(buffer);
 
   const double cx = shape->center_x();
@@ -213,29 +234,26 @@ void Monster::update() {
 
 void Monster::draw() {
  ImageCenter *IC = ImageCenter::get_instance();
-  int d = static_cast<int>(dir);
-  auto &frames = bitmap_img_ids[d];
+  int want_dir = (int)dir;
+int draw_dir = pick_draw_dir(bitmap_img_ids, want_dir);
+auto &frames = bitmap_img_ids[draw_dir];
 
-  if (frames.empty()) {
-    debug_log("Monster::draw(): no frames for type=%d dir=%d\n",
-              (int)type, d);
-    return;
-  }
-  if (bitmap_img_id < 0 || bitmap_img_id >= (int)frames.size()) {
-      //debug_log("Monster::draw(): bitmap_img_id=%d out of range, reset to 0\n",bitmap_img_id);
+if (frames.empty()) return; // 全空就不畫
+
+if (bitmap_img_id < 0 || bitmap_img_id >= (int)frames.size())
     bitmap_img_id = 0;
-  }
 
-  char buffer[50];
-  std::sprintf(buffer, "%s/%s_%d.png",
-               MonsterSetting::monster_imgs_root_path[static_cast<int>(type)],
-               MonsterSetting::dir_path_prefix[d],
-               frames[bitmap_img_id]);
+char buffer[50];
+std::sprintf(buffer, "%s/%s_%d.png",
+    MonsterSetting::monster_imgs_root_path[(int)type],
+    MonsterSetting::dir_path_prefix[draw_dir],
+    frames[bitmap_img_id]);
 
-  // debug_log("Drawing monster of type %d, dir %d, frame index %d (file id %d)\n",(int)type, d, bitmap_img_id, frames[bitmap_img_id]);
-  ALLEGRO_BITMAP *bitmap = IC->get(buffer);
-  al_draw_bitmap(bitmap, shape->center_x() - al_get_bitmap_width(bitmap) / 2,
-                 shape->center_y() - al_get_bitmap_height(bitmap) / 2, 0);
+ALLEGRO_BITMAP *bitmap = IC->get(buffer);
+al_draw_bitmap(bitmap,
+    shape->center_x() - al_get_bitmap_width(bitmap) / 2,
+    shape->center_y() - al_get_bitmap_height(bitmap) / 2, 0);
+
 }
 
 
