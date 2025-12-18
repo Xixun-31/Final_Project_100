@@ -3,7 +3,6 @@
 
 #include "Monster.h"
 
-// fixed settwwwwwwwwwwwsadings: MonsterSmallWolf attributes
 class MonsterSmallWolf : public Monster {
 public:
   MonsterSmallWolf(const Point &p) : Monster{MonsterType::SMALLWOLF, p} {

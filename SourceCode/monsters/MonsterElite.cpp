@@ -51,6 +51,22 @@ void MonsterElite::update() {
     _update_motion(DC);
 }
 
+void MonsterElite::draw() {
+    ImageCenter* IC = ImageCenter::get_instance();
+    ALLEGRO_BITMAP* bmp = nullptr;
+
+    if (mode == BossMode::IDLE) {
+        bmp = IC->get(idle_img[anim_frame]);
+    } else {
+        bmp = IC->get(move_img[anim_frame]);
+    }
+
+    if (!bmp) return;
+
+    draw_centered_scaled(bmp, shape->center_x(), shape->center_y(), 0.65f);
+
+}
+
 void  MonsterElite::draw_centered_scaled(ALLEGRO_BITMAP* bmp,float x, float y, float scale) {
     float w = al_get_bitmap_width(bmp);
     float h = al_get_bitmap_height(bmp);
@@ -177,18 +193,4 @@ void MonsterElite::_update_animation(DataCenter* DC) {
     }
 }
 
-void MonsterElite::draw() {
-    ImageCenter* IC = ImageCenter::get_instance();
-    ALLEGRO_BITMAP* bmp = nullptr;
 
-    if (mode == BossMode::IDLE) {
-        bmp = IC->get(idle_img[anim_frame]);
-    } else {
-        bmp = IC->get(move_img[anim_frame]);
-    }
-
-    if (!bmp) return;
-
-    draw_centered_scaled(bmp, shape->center_x(), shape->center_y(), 0.65f);
-
-}

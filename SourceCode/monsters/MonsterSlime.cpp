@@ -14,7 +14,13 @@ void MonsterSlime::special_ability(DataCenter* DC) {
         Monster* small_wolf2 = create_monster(MonsterType::SMALLWOLF, pos2);
         EffectEvent effect_event{EffectType::SPLIT, pos};
         DC->effectEvents.push_back(effect_event);
+        EffectEvent effect_event2{EffectType::SLIME_DEATH, pos};
+        DC->effectEvents.push_back(effect_event2);
         DC->monsters.push_back(small_wolf1);
         DC->monsters.push_back(small_wolf2);
     }
 }
+
+
+
+

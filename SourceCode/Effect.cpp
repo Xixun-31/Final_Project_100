@@ -21,6 +21,18 @@ void Effect::emit_split(const Point& pos) {
     DC->effectEvents.push_back(ee);
 }
 
+void Effect::emit_slime_death(const Point& pos) {
+    
+    EffectEvent ee;
+    ee.type = EffectType::SLIME_DEATH;
+    ee.pos = pos;
+    ee.startTime = al_get_time();
+    ee.frame = 0;
+    ee.life = 0.12;     // 每幀 0.12 秒
+
+    DataCenter::get_instance()->effectEvents.push_back(ee);
+}
+
 // for caveman death effect
 void Effect::emit_SSR_death(const Point& pos) {
     
@@ -118,6 +130,26 @@ void Effect::draw_all() {
 
                 std::string path = "assets/image/effects/DEATH_" + std::to_string(ee.frame) + ".png";
                 ALLEGRO_BITMAP* bmp = IC->get(path);  // 這裡如果路徑錯，GAME_ASSERT 會直接把你殺掉
+
+                if (bmp) {
+                    int w = al_get_bitmap_width(bmp);
+                    int h = al_get_bitmap_height(bmp);
+                    al_draw_bitmap(bmp, ee.pos.x - w/2, ee.pos.y - h/2, 0);
+                }
+                break;
+            }
+            case EffectType::SLIME_DEATH: {
+                ee.frame = static_cast<int>(t / ee.life);
+
+            
+                if (ee.frame >= DEATH_FRAMES) {
+                    remove_this = true;
+                    break;
+                }
+
+                std::string path = "assets/image/monster/Slime/DEATH_" + std::to_string(ee.frame) + ".png";
+                ALLEGRO_BITMAP* bmp = IC->get(path);  
+
 
                 if (bmp) {
                     int w = al_get_bitmap_width(bmp);

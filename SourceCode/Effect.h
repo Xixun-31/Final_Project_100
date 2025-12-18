@@ -8,6 +8,7 @@ enum class EffectType {
     SPLIT,
     SSR_DEATH,
     DEATH,
+    SLIME_DEATH,
     // 之後要加更多特效就加在這裡，例如：
     EXPLOSION,
     // ICE,
@@ -31,6 +32,8 @@ namespace Effect {
     void emit_split(const Point& pos);
     // for caveman death effects
     void emit_SSR_death(const Point& pos); 
+
+    void emit_slime_death(const Point& pos);
     // 產生一個「死亡」特效（一般怪物死亡用）
     void emit_death(const Point& pos);
     // 產生爆炸特效
