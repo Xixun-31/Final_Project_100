@@ -172,8 +172,8 @@ void MonsterElite::_update_motion(DataCenter* DC) {
     }
 
     case BossMode::ULT_MOVE: {
-        double cx = DC->game_field_length * 0.5;
-        double cy = DC->game_field_length * 0.5;
+        double cx = DC->game_field_length * 0.5 + 100;
+        double cy = DC->game_field_length * 0.5 - 100;
 
         double x = shape->center_x();
         double y = shape->center_y();
@@ -235,8 +235,8 @@ void MonsterElite::_update_motion(DataCenter* DC) {
         break;
     }
 
-    } // ✅ switch end
-}     // ✅ function end
+    } 
+}     
 
 
 void MonsterElite::_enter_dash_toward_hero(DataCenter* DC) {
@@ -351,7 +351,6 @@ void MonsterElite::_fire_diagonal_barrage(DataCenter* DC) {
 }
 
 void MonsterElite::_fire_spinning_barrage(DataCenter* DC) {
-    // 用目前貼圖大小估四角（跟你現在 _fire_diagonal_barrage 一樣）
     ImageCenter* IC = ImageCenter::get_instance();
     const std::string &path = (mode == BossMode::IDLE)
         ? idle_img[anim_frame]
@@ -387,7 +386,7 @@ void MonsterElite::_fire_spinning_barrage(DataCenter* DC) {
     Point dLD = rotate(baseLD, spin_angle);
     Point dRD = rotate(baseRD, spin_angle);
 
-    double bullet_speed = 520.0;
+    double bullet_speed = 300.0;
     int dmg = 6;
     double fly_dist = 2500.0;
 

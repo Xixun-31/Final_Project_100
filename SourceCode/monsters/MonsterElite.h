@@ -58,9 +58,9 @@ public:
 
     // ULT 參數
     double ult_timer = 0.0;
-    double ult_move_speed = 520.0;     // 去中心速度（可調）
+    double ult_move_speed = 520.0;     // 去中心速度
     double ult_duration = 3.0;         // 旋轉彈幕持續秒數
-    double ult_shot_interval = 0.06;   // 發射間隔（越小越密）
+    double ult_shot_interval = 0.08;   // 發射間隔
     double ult_shot_timer = 0.0;
 
     double spin_angle = 0.0;           // 目前旋轉角

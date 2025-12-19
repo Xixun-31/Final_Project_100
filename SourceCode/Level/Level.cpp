@@ -58,7 +58,8 @@ void Level::load_level(int lvl) {
   spawn_points.emplace_back(SpawnPoint{Point{0, DC->game_field_length}});
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, 0}});
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, DC->game_field_length}});
-  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2, DC->game_field_length / 2}}); // Index 4: Center
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2 + 50, DC->game_field_length / 2}}); // Index 4: Center
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2 + 100, 0}}); // Index 5: Center Left
   
   if (background) {
     al_destroy_bitmap(background);
@@ -118,9 +119,9 @@ void Level::load_level(int lvl) {
   }
   if (lvl == 3) {
       waves.push_back(Wave{
-      .units = {{MonsterType::ELITE, 1, 1, 4}},
+      .units = {{MonsterType::ELITE, 1, 1, 5}},
       .spawn_interval = 1,
-      .start_delay = 180,
+      .start_delay = 60,
       .wait_until_clear = true
       });
   }
