@@ -54,7 +54,7 @@ public:
     void _update_animation(DataCenter* DC);
     void _update_motion(DataCenter* DC);
     void _enter_dash_toward_hero(DataCenter* DC);
-    void draw_centered_scaled(ALLEGRO_BITMAP* bmp, float x, float y, float scale);
+    
 
 };
 

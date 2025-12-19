@@ -92,16 +92,29 @@ void MonsterElite::special_ability(DataCenter* DC) {
         int    dmg          = 5;
         double fly_dist     = 2500.0; // Increased to cover map
 
-        Bullet* b = new Bullet(
+        if (mode != BossMode::DASH) {
+            Bullet* b = new Bullet(
             from,
             to,
             "./assets/image/monster/Elite/BULLET.png",   // 改成你自己的子彈圖
             bullet_speed,
             dmg,
             fly_dist
-        );
-
-        DC->monsterBullets.push_back(b);
+            );
+            DC->monsterBullets.push_back(b);
+        }
+        if (mode == BossMode::DASH) {
+            // Dash 時子彈速度變快
+            Bullet* b = new Bullet(
+            from,
+            to,
+            "./assets/image/monster/Elite/.png",   // 改成你自己的子彈圖
+            bullet_speed * 1.5,
+            dmg,
+            fly_dist
+            );
+            DC->monsterBullets.push_back(b);
+        }
     }
 
     // ===== 2. 決定何時衝刺（dash） =====

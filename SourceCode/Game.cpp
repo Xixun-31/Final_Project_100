@@ -366,7 +366,7 @@ bool Game::game_update() {
     SC->update();
     ui->update();
     DC->hero->update();
-    if (state == STATE::LEVEL && !DC->hero->is_dying) {
+    if ((state == STATE::LEVEL || state == STATE::LEVEL0) && !DC->hero->is_dying) {
       DC->level->update();
       OC->update();
     }
