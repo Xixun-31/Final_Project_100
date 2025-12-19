@@ -139,6 +139,9 @@ void OperationCenter::_update_hero_monsterBullet() {
     // Check if the bullet overlaps with the hero.
     if (hero->shape->overlap(*(bullets[i]->shape))) {
       // Reduce the HP of the hero. Delete the bullet.
+      Point from{ bullets[i]->shape->center_x(), bullets[i]->shape->center_y() };
+      DC->hero->apply_knockback(from, 380.0, 0.12);
+
       hero->hit();
       delete bullets[i];
       bullets.erase(bullets.begin() + i);
@@ -205,7 +208,8 @@ void OperationCenter::_update_hero_monster() {
       }
       if (monsters[i]->peek_type() == MonsterType::DEMONNINJA) {
           Effect::emit_slap(Point{monsters[i]->shape->center_x(), monsters[i]->shape->center_y()});
-          
+          Point from{ monsters[i]->shape->center_x(), monsters[i]->shape->center_y() };
+          DC->hero->apply_knockback(from, 520.0, 0.20);  // 力度/時間自己調
       }
       // If hero is not invincible, hurt the player and make hero invincible.
       if (!hero->is_invincible()) {

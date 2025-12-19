@@ -11,6 +11,7 @@
 #include <cstring>
 #include "Utils.h"
 #include "Table.h" // Added
+#include <cmath>
 
 namespace HeroSetting {
 static constexpr char Hero_images_root_path[40] = "./assets/image/hero/stable_";
@@ -122,6 +123,20 @@ void Hero::init() {
 
 void Hero::update() {
   DataCenter *DC = DataCenter::get_instance();
+  
+    double dt = 1.0 / DC->FPS;
+   if (kb_timer > 0.0) {
+        shape->update_center_x(shape->center_x() + kb_vx * dt);
+        shape->update_center_y(shape->center_y() + kb_vy * dt);
+
+        // 衰減（讓擊退有「停下來」的感覺）
+        kb_vx *= 0.85;
+        kb_vy *= 0.85;
+
+        kb_timer -= dt;
+        if (kb_timer < 0) kb_timer = 0;
+   }
+  
   if (roll_cd > 0)
     roll_cd--;
 
@@ -403,6 +418,28 @@ void Hero::draw() {
       shape->center_y() - al_get_bitmap_height(bitmap) / 2,
       al_get_bitmap_width(bitmap), al_get_bitmap_height(bitmap), 0);
 }
+
+
+
+void Hero::apply_knockback(const Point& from, double strength, double duration) {
+    // from -> hero 方向（把 hero 往遠離攻擊者推）
+    double hx = shape->center_x();
+    double hy = shape->center_y();
+
+    double dx = hx - from.x;
+    double dy = hy - from.y;
+
+    double len = std::sqrt(dx*dx + dy*dy);
+    if (len < 1e-6) { dx = 1; dy = 0; len = 1; } // 避免除0
+
+    dx /= len;
+    dy /= len;
+
+    kb_vx = dx * strength;
+    kb_vy = dy * strength;
+    kb_timer = duration;
+}
+
 
 void Hero::attack() {
   if (is_attacking || counter > 0 || is_reloading || attack_lock_timer > 0)

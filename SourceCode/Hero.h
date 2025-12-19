@@ -30,6 +30,7 @@ public:
   bool is_shockwave_active() const { return is_bombing; }
   float getShockwaveRadius() const;
   bool in_secret_zone() const;
+  void apply_knockback(const Point& from, double strength = 450.0, double duration = 0.18);
 
 private:
   HeroState state = HeroState::UP;
@@ -81,6 +82,9 @@ private:
   const int max_bomb_count = 3;
   int power_level = 0;
   void activate_bomb();
+  
+  double kb_vx = 0.0, kb_vy = 0.0;
+  double kb_timer = 0.0;
 
 public:
   int get_bomb_count() const { return bomb_count; }
