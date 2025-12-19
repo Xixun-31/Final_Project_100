@@ -118,9 +118,9 @@ void Level::load_level(int lvl) {
   }
   if (lvl == 3) {
       waves.push_back(Wave{
-      .units = {{MonsterType::ELITE, 1}},
+      .units = {{MonsterType::ELITE, 1, 1, 4}},
       .spawn_interval = 1,
-      .start_delay = 60,
+      .start_delay = 180,
       .wait_until_clear = true
       });
   }
