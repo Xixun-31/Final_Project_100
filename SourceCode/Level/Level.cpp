@@ -105,9 +105,6 @@ void Level::load_level(int lvl) {
       });
   }
   if (lvl == 1) {
-      // Spawn Table: Right side (550, 300), Thinner (20 width, 150 height)
-      // 550 is visible (Window width 800).
-      DC->tables.push_back(new Table(550, 300, 100, 20));
       
       waves.push_back(Wave{
           .units = {{MonsterType::BARREL, 1, 1, 4}}, // Wave 0: Barrel (Center)
@@ -135,6 +132,9 @@ void Level::load_level(int lvl) {
       });
   }
   if (lvl == 2) {
+      // Spawn Table in Level 2 as requested (550, 300)
+      DC->tables.push_back(new Table(550, 300, 100, 20));
+
       waves.push_back(Wave{
       .units = {{MonsterType::CAVEMAN, 4}},
       .spawn_interval = 50,

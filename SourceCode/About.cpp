@@ -72,6 +72,10 @@ void About::draw() {
 				 DC->window_width / 2., 350,
 				 ALLEGRO_ALIGN_CENTRE, "Mouse Right Click to Clear Bullets");
 
+	al_draw_text(FC->consolas[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
+				 DC->window_width / 2., 400,
+				 ALLEGRO_ALIGN_CENTRE, "Press F to Flip Table (Level 2)");
+
 	// Helper
 	auto draw_btn = [&](Rectangle &r, const char* text, bool hover) {
 		ALLEGRO_COLOR color = hover ? al_map_rgb(173, 216, 230) : al_map_rgb(255, 255, 255);
