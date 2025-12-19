@@ -29,6 +29,7 @@ public:
   void reload();
   bool is_shockwave_active() const { return is_bombing; }
   float getShockwaveRadius() const;
+  bool in_secret_zone() const;
 
 private:
   HeroState state = HeroState::UP;

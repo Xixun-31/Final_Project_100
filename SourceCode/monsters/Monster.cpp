@@ -24,6 +24,7 @@
 
 
 #include <algorithm>
+#include <allegro5/allegro_color.h>
 #include <allegro5/allegro_primitives.h>
 #include <cmath>
 #include <cstdio>
@@ -35,7 +36,7 @@ using namespace std;
 namespace MonsterSetting {
 static constexpr char monster_imgs_root_path[static_cast<int>(
     MonsterType::MONSTERTYPE_MAX)][40] = {
-    "./assets/image/monster/Wolf","./assets/image/monster/Wolf","./assets/image/monster/CaveMan",
+    "./assets/image/monster/Wolf","./assets/image/monster/Slime","./assets/image/monster/CaveMan",
     "./assets/image/monster/WolfKnight", "./assets/image/monster/DemonNinja",
     // 之後要實作再打開
     "./assets/image/monster/Bird", "./assets/image/monster/Elite",
@@ -120,16 +121,55 @@ Monster::Monster(MonsterType type, const Point &p) {
 /**
  * @details 更新：動畫 → 追玩家移動 → 更新 hitbox
  */
+
+static int pick_draw_dir(const std::vector<int> bitmap_img_ids[4], int want_dir) {
+    if (!bitmap_img_ids[want_dir].empty()) return want_dir;
+
+    // fallback 順序你可調：先用 DOWN，再 RIGHT，再 LEFT，再 UP
+    const int order[4] = {(int)Dir::DOWN, (int)Dir::RIGHT, (int)Dir::LEFT, (int)Dir::UP};
+    for (int d : order) {
+        if (!bitmap_img_ids[d].empty()) return d;
+    }
+    return want_dir; // 全空才會回到原本（但這代表你根本沒設圖）
+}
+
+
 void Monster::update() {
     DataCenter *DC = DataCenter::get_instance();
     ImageCenter *IC = ImageCenter::get_instance();
     // 1. 更新動畫（先拿出該方向的 frame 列表）
-    int d = static_cast<int>(dir);
-  auto &frames = bitmap_img_ids[d];
+
+    double dt = 1.0 / DC->FPS;
+
+// --- 擊退位移 ---
+if (std::abs(kb_vx) > 1e-3 || std::abs(kb_vy) > 1e-3) {
+    shape->update_center_x(shape->center_x() + kb_vx * dt);
+    shape->update_center_y(shape->center_y() + kb_vy * dt);
+
+    // 阻尼衰減（數字越小衰減越快）
+    kb_vx *= 0.85;
+    kb_vy *= 0.85;
+
+    // 小到一定程度就歸零
+    if (std::abs(kb_vx) < 5) kb_vx = 0;
+    if (std::abs(kb_vy) < 5) kb_vy = 0;
+}
+
+// --- 受傷閃紅計時 ---
+if (hit_flash_timer > 0) hit_flash_timer -= dt;
+if (hit_flash_timer < 0) hit_flash_timer = 0;
+
+
+
+    int want_dir = (int)dir;
+    int draw_dir = pick_draw_dir(bitmap_img_ids, want_dir);
+    auto &frames = bitmap_img_ids[draw_dir];
+
+  
 
   if (frames.empty()) {
     debug_log("Monster::update(): no frames for type=%d dir=%d\n",
-              (int)type, d);
+              (int)type, draw_dir);
     // 沒有對這個方向設定任何 frame，先不要更新動畫，避免崩潰
     bitmap_img_id = 0;
   } else {
@@ -197,10 +237,15 @@ void Monster::update() {
 
   // 4. 更新 hitbox
   char buffer[50];
-  std::sprintf(buffer, "%s/%s_%d.png",
-               MonsterSetting::monster_imgs_root_path[static_cast<int>(type)],
-               MonsterSetting::dir_path_prefix[static_cast<int>(dir)],
-               bitmap_img_ids[static_cast<int>(dir)][bitmap_img_id]);
+  int want_dir2 = (int)dir;
+  int draw_dir2 = pick_draw_dir(bitmap_img_ids, want_dir2);
+
+std::sprintf(buffer, "%s/%s_%d.png",
+    MonsterSetting::monster_imgs_root_path[(int)type],
+    MonsterSetting::dir_path_prefix[draw_dir2],
+    bitmap_img_ids[draw_dir2][bitmap_img_id]);
+
+
   ALLEGRO_BITMAP *bitmap = IC->get(buffer);
 
   const double cx = shape->center_x();
@@ -219,29 +264,36 @@ void Monster::update() {
 
 void Monster::draw() {
  ImageCenter *IC = ImageCenter::get_instance();
-  int d = static_cast<int>(dir);
-  auto &frames = bitmap_img_ids[d];
+  int want_dir = (int)dir;
+int draw_dir = pick_draw_dir(bitmap_img_ids, want_dir);
+auto &frames = bitmap_img_ids[draw_dir];
 
-  if (frames.empty()) {
-    debug_log("Monster::draw(): no frames for type=%d dir=%d\n",
-              (int)type, d);
-    return;
-  }
-  if (bitmap_img_id < 0 || bitmap_img_id >= (int)frames.size()) {
-      //debug_log("Monster::draw(): bitmap_img_id=%d out of range, reset to 0\n",bitmap_img_id);
+if (frames.empty()) return; // 全空就不畫
+
+if (bitmap_img_id < 0 || bitmap_img_id >= (int)frames.size())
     bitmap_img_id = 0;
-  }
 
-  char buffer[50];
-  std::sprintf(buffer, "%s/%s_%d.png",
-               MonsterSetting::monster_imgs_root_path[static_cast<int>(type)],
-               MonsterSetting::dir_path_prefix[d],
-               frames[bitmap_img_id]);
+char buffer[50];
+std::sprintf(buffer, "%s/%s_%d.png",
+    MonsterSetting::monster_imgs_root_path[(int)type],
+    MonsterSetting::dir_path_prefix[draw_dir],
+    frames[bitmap_img_id]);
 
-  // debug_log("Drawing monster of type %d, dir %d, frame index %d (file id %d)\n",(int)type, d, bitmap_img_id, frames[bitmap_img_id]);
-  ALLEGRO_BITMAP *bitmap = IC->get(buffer);
-  al_draw_bitmap(bitmap, shape->center_x() - al_get_bitmap_width(bitmap) / 2,
-                 shape->center_y() - al_get_bitmap_height(bitmap) / 2, 0);
+    ALLEGRO_BITMAP *bitmap = IC->get(buffer);
+    
+    float x = shape->center_x() - al_get_bitmap_width(bitmap) / 2;
+    float y = shape->center_y() - al_get_bitmap_height(bitmap) / 2;
+    al_draw_bitmap(bitmap,x, y, 0);
+    
+    if (hit_flash_timer > 0) {
+      // 紅色偏亮，alpha=1 代表完全不透明
+      ALLEGRO_COLOR tint = al_map_rgba_f(1.0, 0.3, 0.3, 1.0);
+      al_draw_tinted_bitmap(bitmap, tint, x, y, 0);
+    } else {
+      al_draw_bitmap(bitmap, x, y, 0);
+    }
+
+
 }
 
 
@@ -251,6 +303,26 @@ int Monster::get_money() const { return money; }
 void Monster::special_ability(DataCenter* DC) {
  
 }
+
+void Monster::on_hit(const Point& from, double kb_strength) {
+    // 受傷變紅 0.12 秒
+    hit_flash_timer = 0.12;
+
+    // 擊退方向：從子彈來源 -> 怪物（把怪往外推）
+    double cx = shape->center_x();
+    double cy = shape->center_y();
+    double dx = cx - from.x;
+    double dy = cy - from.y;
+    double len = std::sqrt(dx*dx + dy*dy);
+    if (len < 1e-6) len = 1.0;
+
+    dx /= len; dy /= len;
+
+    // 給一個瞬間速度（px/s）
+    kb_vx += dx * kb_strength;
+    kb_vy += dy * kb_strength;
+}
+
 
 
 

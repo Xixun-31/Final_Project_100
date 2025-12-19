@@ -88,6 +88,9 @@ void OperationCenter::_update_monster_heroBullet() {
       if (monsters[i]->shape->overlap(*(heroBullets[j]->shape))) {
         // Reduce the HP of the monster. Delete the bullet.
         monsters[i]->HP -= heroBullets[j]->get_dmg();
+        Point bullet_pos{ heroBullets[j]->shape->center_x(), heroBullets[j]->shape->center_y() };
+        monsters[i]->on_hit(bullet_pos, 350.0); // 350 = 擊退強度，你可調
+        
         delete heroBullets[j];
         heroBullets.erase(heroBullets.begin() + j);
         --j;
@@ -163,7 +166,12 @@ void OperationCenter::_update_hero_monster() {
   Hero *hero = DC->hero;
   for (size_t i = 0; i < monsters.size(); ++i) {
     // Check if the hero overlaps with the monster.
+
     if (hero->shape->overlap(*(monsters[i]->shape)) && monsters[i]->peek_type() != MonsterType::TREASURE) {
+      if (monsters[i]->peek_type() == MonsterType::SUICIDE) {
+          monsters[i]->HP = 0;
+          Effect::emit_suicide_explosion(Point{monsters[i]->shape->center_x(), monsters[i]->shape->center_y()});
+      }
       // If hero is not invincible, hurt the player and make hero invincible.
       if (!hero->is_invincible()) {
         hero->hit();
@@ -189,6 +197,8 @@ void OperationCenter::_update_monster_player() {
       }
       if (monsters[i]->peek_type() == MonsterType::CAVEMAN) {
           Effect::emit_SSR_death(pos);
+      } else if (monsters[i]->peek_type() == MonsterType::SLIME || monsters[i]->peek_type() == MonsterType::SMALLWOLF) {
+          Effect::emit_slime_death(pos);
       } else if (monsters[i]->peek_type() == MonsterType::WOLF || monsters[i]->peek_type() == MonsterType::BARREL) {
           // Wolf/Barrel triggers their own effects in special_ability
       } else {

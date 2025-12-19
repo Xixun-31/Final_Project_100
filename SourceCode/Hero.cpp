@@ -455,6 +455,11 @@ void Hero::hit() {
   }
 }
 
+double SECRET_X1 = 800;
+double SECRET_Y1 = 600;
+double SECRET_X2 = 750;
+double SECRET_Y2 = 550;
+
 bool Hero::is_invincible() { return invincible_timer > 0; }
 
 void Hero::power_up() {
@@ -464,4 +469,12 @@ void Hero::power_up() {
     // Restore Ammo
     ammo = max_ammo;
     is_reloading = false;
+}
+
+bool Hero::in_secret_zone() const {
+    if(shape->center_x() > SECRET_X2 && shape->center_x() < SECRET_X1 &&
+       shape->center_y() > SECRET_Y2 && shape->center_y() < SECRET_Y1) {
+           return true;
+       }
+    return false;
 }

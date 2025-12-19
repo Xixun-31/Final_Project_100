@@ -29,13 +29,20 @@ MonsterElite::MonsterElite(const Point& p)
         "./assets/image/monster/Elite/MOVE_4.png"
     };
 
+    diag_bullet = {
+        "./assets/image/monster/Elite/BULLET_UL.png",
+        "./assets/image/monster/Elite/BULLET_UR.png",
+        "./assets/image/monster/Elite/BULLET_DL.png",
+        "./assets/image/monster/Elite/BULLET_DR.png"
+    };
+
     mode = BossMode::IDLE;
     ImageCenter* IC = ImageCenter::get_instance();
     ALLEGRO_BITMAP* bmp = IC->get(idle_img[0]);
     if (bmp) {
-        float scale = 0.65f;  // 你 draw_centered_scaled 用的 scale
-        float w = al_get_bitmap_width(bmp)  * scale;
-        float h = al_get_bitmap_height(bmp) * scale;
+        
+        float w = al_get_bitmap_width(bmp);
+        float h = al_get_bitmap_height(bmp);
 
         double r = std::min(w, h) * 0.4f;    
 
@@ -51,93 +58,186 @@ void MonsterElite::update() {
     _update_motion(DC);
 }
 
-void  MonsterElite::draw_centered_scaled(ALLEGRO_BITMAP* bmp,float x, float y, float scale) {
-    float w = al_get_bitmap_width(bmp);
-    float h = al_get_bitmap_height(bmp);
+void MonsterElite::draw() {
+    ImageCenter* IC = ImageCenter::get_instance();
+    ALLEGRO_BITMAP* bmp = nullptr;
 
-    float new_w = w * scale;
-    float new_h = h * scale;
+    if (mode == BossMode::IDLE) {
+        bmp = IC->get(idle_img[anim_frame]);
+    } else {
+        bmp = IC->get(move_img[anim_frame]);
+    }
 
-    al_draw_scaled_bitmap(
-        bmp,
-        0, 0, w, h,
-        x - new_w / 2,
-        y - new_h / 2,
-        new_w,
-        new_h,
-        0
-    );
+    if (!bmp) return;
+    float x = shape->center_x() - al_get_bitmap_width(bmp) / 2;
+    float y = shape->center_y() - al_get_bitmap_height(bmp) / 2;
+    if (mode == BossMode::ULT_CHARGE) {
+    float amp = 4.0f; // 抖動幅度
+    x += std::sin(ult_shake_phase * 60.0) * amp;
+    y += std::cos(ult_shake_phase * 55.0) * amp;
 }
+      
+    if (hit_flash_timer > 0 || mode == BossMode::ULT_CHARGE) {
+      // 紅色偏亮，alpha=1 代表完全不透明
+      ALLEGRO_COLOR tint = al_map_rgba_f(1.0, 0.3, 0.3, 1.0);
+      al_draw_tinted_bitmap(bmp, tint, x, y, 0);
+    } else {
+      al_draw_bitmap(bmp, x, y, 0);
+    }
+
+}
+
 
 
 void MonsterElite::special_ability(DataCenter* DC) {
     double now = al_get_time();
-
-    // ===== 1. 一直噴子彈（有 cooldown） =====
-    if (now - last_shot_time >= shot_cooldown) {
-        last_shot_time = now;
-
-        Point from{ shape->center_x(), shape->center_y() };
-        Point to  { DC->hero->shape->center_x(), DC->hero->shape->center_y() };
-
-        double bullet_speed = 260.0;
-        int    dmg          = 5;
-        double fly_dist     = 2500.0; // Increased to cover map
-
-        Bullet* b = new Bullet(
-            from,
-            to,
-            "./assets/image/monster/Elite/BULLET.png",   // 改成你自己的子彈圖
-            bullet_speed,
-            dmg,
-            fly_dist
-        );
-
-        DC->monsterBullets.push_back(b);
-    }
-
-    // ===== 2. 決定何時衝刺（dash） =====
+    if(mode == BossMode::ULT_CHARGE || mode == BossMode::ULT_FIRE || mode == BossMode::ULT_MOVE) return;
+    // run into hero
     if (mode != BossMode::DASH && now - last_dash_time >= dash_cooldown) {
-        // 這裡觸發一次 dash，朝 hero 方向衝
         _enter_dash_toward_hero(DC);
         last_dash_time = now;
     }
+
+    // shoot diagonal bullets while dashing
+    if (mode == BossMode::DASH && dash_timer < dash_duration) {
+        if (now - last_shot_time >= shot_cooldown / 3) {
+            last_shot_time = now;
+            _fire_diagonal_barrage(DC);
+        }
+    }
+
+    // regular shooting
+    if (mode != BossMode::DASH) {
+        if (now - last_shot_time >= shot_cooldown) {
+            last_shot_time = now;
+
+            Point from{ shape->center_x(), shape->center_y() };
+            Point to{ DC->hero->shape->center_x(), DC->hero->shape->center_y() };
+
+            Bullet* b = new Bullet(from, to,
+                "./assets/image/monster/Elite/BULLET.png",
+                260.0, 5, 2500.0);
+
+            DC->monsterBullets.push_back(b);
+        }
+    }
 }
+
 
 void MonsterElite::_update_motion(DataCenter* DC) {
     double dt = 1.0 / DC->FPS;
 
     switch (mode) {
-    case BossMode::IDLE:
-        // 不動，純晃動（動畫）
+
+    case BossMode::IDLE: {
         vx = vy = 0.0;
         break;
+    }
 
-    case BossMode::MOVE:
-        // 可以做一點隨機慢移動（這裡簡單不動，你之後想加再加）
-        vx = vy = 0.0;
+    case BossMode::MOVE: {
+        // 如果你真的想要 MOVE，就在這裡決定 vx/vy
+        // 例如：慢慢漂移（你也可以改成自己的 AI）
+        // vx = 20; vy = 0;
+
+        shape->update_center_x(shape->center_x() + vx * dt);
+        shape->update_center_y(shape->center_y() + vy * dt);
         break;
+    }
 
-    case BossMode::DASH:
+    case BossMode::DASH: {
         dash_timer += dt;
 
-        // 依照 dash 方向移動
         shape->update_center_x(shape->center_x() + dash_dir_x * dash_speed * dt);
         shape->update_center_y(shape->center_y() + dash_dir_y * dash_speed * dt);
 
         if (dash_timer >= dash_duration) {
-            // 衝刺結束，回到 IDLE 或 MOVE
-            mode = BossMode::IDLE;
             dash_timer = 0.0;
+            dash_count++;
+
+            if (dash_count >= 2) { // 要 10 次就改 10
+                dash_count = 0;
+                mode = BossMode::ULT_MOVE;
+
+                // reset ult states
+                charge_timer = 0.0;
+                ult_timer = 0.0;
+                ult_shot_timer = 0.0;
+                spin_angle = 0.0;
+                ult_shake_phase = 0.0;
+            } else {
+                mode = BossMode::IDLE;
+            }
         }
         break;
     }
 
-    if (mode == BossMode::MOVE) {
-        shape->update_center_x(shape->center_x() + vx * dt);
-        shape->update_center_y(shape->center_y() + vy * dt);
+    case BossMode::ULT_MOVE: {
+        double cx = DC->game_field_length * 0.5 + 100;
+        double cy = DC->game_field_length * 0.5 - 100;
+
+        double x = shape->center_x();
+        double y = shape->center_y();
+
+        double dx = cx - x;
+        double dy = cy - y;
+        double dist = std::sqrt(dx * dx + dy * dy);
+
+        if (dist < 5.0) {
+            mode = BossMode::ULT_CHARGE;
+            charge_timer = 0.0;
+            ult_shake_phase = 0.0;
+            vx = vy = 0.0;
+            break;
+        }
+
+        double vxm = dx / (dist + 1e-9) * ult_move_speed;
+        double vym = dy / (dist + 1e-9) * ult_move_speed;
+
+        shape->update_center_x(x + vxm * dt);
+        shape->update_center_y(y + vym * dt);
+        break;
     }
-}
+
+    case BossMode::ULT_CHARGE: {
+        charge_timer += dt;
+        ult_shake_phase += dt;
+
+        if (charge_timer >= charge_duration) {
+            mode = BossMode::ULT_FIRE;
+            ult_timer = 0.0;
+            ult_shot_timer = 0.0;
+            spin_angle = 0.0;
+        }
+        break;
+    }
+
+    case BossMode::ULT_FIRE: {
+        ult_timer += dt;
+        ult_shot_timer += dt;
+        spin_angle += spin_speed * dt;
+
+        if (ult_shot_timer >= ult_shot_interval) {
+            ult_shot_timer = 0.0;
+            _fire_spinning_barrage(DC);
+        }
+
+        if (ult_timer >= ult_duration) {
+            mode = BossMode::IDLE;
+            ult_timer = 0.0;
+            ult_shot_timer = 0.0;
+            spin_angle = 0.0;
+        }
+        break;
+    }
+
+    default: {
+        mode = BossMode::IDLE;
+        break;
+    }
+
+    } 
+}     
+
 
 void MonsterElite::_enter_dash_toward_hero(DataCenter* DC) {
     Point boss_pos{ shape->center_x(), shape->center_y() };
@@ -158,6 +258,23 @@ void MonsterElite::_enter_dash_toward_hero(DataCenter* DC) {
 void MonsterElite::_update_animation(DataCenter* DC) {
     double dt = 1.0 / DC->FPS;
     anim_timer += dt;
+    // --- 擊退位移 ---
+    if (std::abs(kb_vx) > 1e-3 || std::abs(kb_vy) > 1e-3) {
+        shape->update_center_x(shape->center_x() + kb_vx * dt);
+        shape->update_center_y(shape->center_y() + kb_vy * dt);
+
+        // 阻尼衰減（數字越小衰減越快）
+        kb_vx *= 0.85;
+        kb_vy *= 0.85;
+
+        // 小到一定程度就歸零
+        if (std::abs(kb_vx) < 5) kb_vx = 0;
+        if (std::abs(kb_vy) < 5) kb_vy = 0;
+    }
+
+    // --- 受傷閃紅計時 ---
+    if (hit_flash_timer > 0) hit_flash_timer -= dt;
+    if (hit_flash_timer < 0) hit_flash_timer = 0;
 
     double frame_dt;
     int frame_count;
@@ -177,18 +294,116 @@ void MonsterElite::_update_animation(DataCenter* DC) {
     }
 }
 
-void MonsterElite::draw() {
+void MonsterElite::_fire_diagonal_barrage(DataCenter* DC) {
+    // 取得當前貼圖尺寸與中心點
     ImageCenter* IC = ImageCenter::get_instance();
-    ALLEGRO_BITMAP* bmp = nullptr;
+    const std::string &path = (mode == BossMode::IDLE)
+        ? idle_img[anim_frame]
+        : move_img[anim_frame];
 
-    if (mode == BossMode::IDLE) {
-        bmp = IC->get(idle_img[anim_frame]);
-    } else {
-        bmp = IC->get(move_img[anim_frame]);
-    }
-
+    ALLEGRO_BITMAP* bmp = IC->get(path);
     if (!bmp) return;
 
-    draw_centered_scaled(bmp, shape->center_x(), shape->center_y(), 0.65f);
+    
+    float halfW = al_get_bitmap_width(bmp)  * 0.5f;
+    float halfH = al_get_bitmap_height(bmp) * 0.5f;
 
+    Point c{ shape->center_x(), shape->center_y() };
+
+    // 四個槍口（貼圖四角）
+    Point muzzleLU{ c.x - halfW, c.y - halfH };
+    Point muzzleRU{ c.x + halfW, c.y - halfH };
+    Point muzzleLD{ c.x - halfW, c.y + halfH };
+    Point muzzleRD{ c.x + halfW, c.y + halfH };
+
+    // 四個方向單位向量（對應 左上/右上/左下/右下）
+    // y 往下是正（Allegro 通常是這樣），所以「上」是 -y
+    const double inv = 0.70710678118; // 1/sqrt(2)
+    Point dirLU{ -inv, -inv };
+    Point dirRU{ +inv, -inv };
+    Point dirLD{ -inv, +inv };
+    Point dirRD{ +inv, +inv };
+
+    // 子彈參數
+    double bullet_speed = 500.0;
+    int    dmg          = 6;
+    double fly_dist     = 2500.0;
+
+    auto shoot = [&](const Point& from, const Point& dir) {
+        // 目標點：沿方向打到很遠（Bullet 用 target 來算 vx/vy）
+        Point to{ from.x + dir.x * 10000.0, from.y + dir.y * 10000.0 };
+
+        Bullet* b = new Bullet(
+            from,
+            to,
+            "./assets/image/monster/Elite/BULLET_DIAG.png",
+            bullet_speed,
+            dmg,
+            fly_dist
+        );
+        DC->monsterBullets.push_back(b);
+    };
+
+    shoot(muzzleLU, dirLU);
+    shoot(muzzleRU, dirRU);
+    shoot(muzzleLD, dirLD);
+    shoot(muzzleRD, dirRD);
 }
+
+void MonsterElite::_fire_spinning_barrage(DataCenter* DC) {
+    ImageCenter* IC = ImageCenter::get_instance();
+    const std::string &path = (mode == BossMode::IDLE)
+        ? idle_img[anim_frame]
+        : move_img[anim_frame];
+
+    ALLEGRO_BITMAP* bmp = IC->get(path);
+    if (!bmp) return;
+
+    float halfW = al_get_bitmap_width(bmp) * 0.5f;
+    float halfH = al_get_bitmap_height(bmp) * 0.5f;
+
+    Point c{ shape->center_x(), shape->center_y() };
+    Point muzzleLU{ c.x - halfW, c.y - halfH };
+    Point muzzleRU{ c.x + halfW, c.y - halfH };
+    Point muzzleLD{ c.x - halfW, c.y + halfH };
+    Point muzzleRD{ c.x + halfW, c.y + halfH };
+
+    // 基礎四方向：45°/135°/225°/315°（對角）
+    const double inv = 0.70710678118;
+    Point baseLU{ -inv, -inv };
+    Point baseRU{ +inv, -inv };
+    Point baseLD{ -inv, +inv };
+    Point baseRD{ +inv, +inv };
+
+    auto rotate = [&](const Point& d, double a) -> Point {
+        double ca = std::cos(a), sa = std::sin(a);
+        return Point{ d.x * ca - d.y * sa, d.x * sa + d.y * ca };
+    };
+
+    // ✅ 用 spin_angle 做偏轉（連續旋轉）
+    Point dLU = rotate(baseLU, spin_angle);
+    Point dRU = rotate(baseRU, spin_angle);
+    Point dLD = rotate(baseLD, spin_angle);
+    Point dRD = rotate(baseRD, spin_angle);
+
+    double bullet_speed = 300.0;
+    int dmg = 6;
+    double fly_dist = 2500.0;
+
+    auto shoot = [&](const Point& from, const Point& dir) {
+        Point to{ from.x + dir.x * 10000.0, from.y + dir.y * 10000.0 };
+        Bullet* b = new Bullet(
+            from, to,
+            "./assets/image/monster/Elite/BULLET_DIAG.png",
+            bullet_speed, dmg, fly_dist
+        );
+        DC->monsterBullets.push_back(b);
+    };
+
+    shoot(muzzleLU, dLU);
+    shoot(muzzleRU, dRU);
+    shoot(muzzleLD, dLD);
+    shoot(muzzleRD, dRD);
+}
+
+

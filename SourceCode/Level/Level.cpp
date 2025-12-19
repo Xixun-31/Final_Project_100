@@ -17,7 +17,7 @@ using namespace std;
 // fixed settings
 namespace LevelSetting {
 // 背景圖路徑，依照 level 編號來載入
-constexpr char level_map_format[] = "./assets/image/scene/Level%d.png";
+constexpr char level_map_format[] = "./assets/image/scene/Level%d.jpg";
 // 生怪間隔
 constexpr int monster_spawn_rate = 60;
 }; // namespace LevelSetting
@@ -58,7 +58,8 @@ void Level::load_level(int lvl) {
   spawn_points.emplace_back(SpawnPoint{Point{0, DC->game_field_length}});
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, 0}});
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, DC->game_field_length}});
-  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2, DC->game_field_length / 2}}); // Index 4: Center
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2 + 50, DC->game_field_length / 2}}); // Index 4: Center
+  spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2 + 100, 0}}); // Index 5: Center Left
   
   if (lvl == 0) {
       // Clear any existing monsters (e.g. Barrels from Level 1)
@@ -100,10 +101,10 @@ void Level::load_level(int lvl) {
       });
 
       waves.push_back(Wave{
-          .units = {{MonsterType::WOLF, 1, 1, 0},
-                    {MonsterType::WOLF, 1, 1, 1},
-                    {MonsterType::WOLF, 1, 1, 2}, 
-                    {MonsterType::WOLF, 1, 1, 3}
+          .units = {{MonsterType::SLIME, 1, 1, 0},
+                    {MonsterType::SUICIDE, 2, 1, 1},
+                    {MonsterType::SUICIDE, 2, 1, 2}, 
+                    {MonsterType::SLIME, 1, 1, 3}
           },
           .spawn_interval = 40,
           .start_delay = 0, // Starts immediately after Barrel wave (which is instant)
@@ -126,7 +127,7 @@ void Level::load_level(int lvl) {
       });
 
       waves.push_back(Wave{
-      .units = {{MonsterType::CAVEMAN, 2}, {MonsterType::WOLFKNIGHT, 2}},
+      .units = {{MonsterType::CAVEMAN, 2}, {MonsterType::SUICIDE, 2}},
       .spawn_interval = 40,
       .start_delay = 120,
       .wait_until_clear = true
@@ -134,7 +135,7 @@ void Level::load_level(int lvl) {
   }
   if (lvl == 3) {
       waves.push_back(Wave{
-      .units = {{MonsterType::ELITE, 1}},
+      .units = {{MonsterType::ELITE, 1, 1, 5}},
       .spawn_interval = 1,
       .start_delay = 60,
       .wait_until_clear = true
