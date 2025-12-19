@@ -18,7 +18,7 @@ public:
   void special_ability(DataCenter* DC) override;
 
 
-  double next_slap_time = 0.0;
+  double slap_cd = 0.0; // 秒
   bool was_overlapping = false;
 
 };
