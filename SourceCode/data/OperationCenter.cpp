@@ -169,6 +169,10 @@ void OperationCenter::_update_hero_monster() {
           monsters[i]->HP = 0;
           Effect::emit_suicide_explosion(Point{monsters[i]->shape->center_x(), monsters[i]->shape->center_y()});
       }
+      if (monsters[i]->peek_type() == MonsterType::DEMONNINJA) {
+          Effect::emit_slap(Point{monsters[i]->shape->center_x(), monsters[i]->shape->center_y()});
+          
+      }
       // If hero is not invincible, hurt the player and make hero invincible.
       if (!hero->is_invincible()) {
         hero->hit();

@@ -71,6 +71,19 @@ void Effect::emit_suicide_explosion(const Point& pos) {
     DC->effectEvents.push_back(ee);
 }
 
+void Effect::emit_slap(const Point& pos) {
+    DataCenter* DC = DataCenter::get_instance();
+
+    EffectEvent ee;
+    ee.type = EffectType::SLAP;
+    ee.pos = pos;
+    ee.startTime = al_get_time();
+    ee.life = 0.8; // 特效持續時間（秒）
+    ee.frame = 0;
+
+    DC->effectEvents.push_back(ee);
+}
+
 void Effect::emit_explosion(const Point& pos) {
     DataCenter* DC = DataCenter::get_instance();
 
@@ -210,6 +223,29 @@ void Effect::draw_all() {
                 std::string path = "assets/image/monster/Suicide/EX_" + std::to_string(ee.frame) + ".png";
                 ALLEGRO_BITMAP* bmp = IC->get(path);
                 
+                if (bmp) {
+                    int w = al_get_bitmap_width(bmp);
+                    int h = al_get_bitmap_height(bmp);
+                    al_draw_bitmap(bmp, ee.pos.x - w/2, ee.pos.y - h/2, 0);
+                }
+                break;
+            }
+            case EffectType::SLAP: {
+                // 3 frames: slap_0 ~ slap_2
+                // duration per frame: 0.1s => total 0.8s
+                double duration_per_frame = 0.1;
+                int total_frames = 3;
+
+                ee.frame = static_cast<int>(t / duration_per_frame);
+
+                if (ee.frame >= total_frames) {
+                    remove_this = true;
+                    break;
+                }
+
+                std::string path = "assets/image/monster/DemonNinja/ATTACK_" + std::to_string(ee.frame) + ".png";
+                ALLEGRO_BITMAP* bmp = IC->get(path);
+
                 if (bmp) {
                     int w = al_get_bitmap_width(bmp);
                     int h = al_get_bitmap_height(bmp);

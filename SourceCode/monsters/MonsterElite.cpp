@@ -9,7 +9,7 @@ MonsterElite::MonsterElite(const Point& p)
     : Monster(MonsterType::ELITE, p)   // 記得在你的 MonsterType enum 加一個 ELITE
 {
     // 基本能力值你可以自己調
-    HP    = 250;
+    HP    = 50;
     v     = 40;   // 一般移動速度（MOVE 用）
     money = 20;
 
@@ -264,8 +264,8 @@ void MonsterElite::_update_animation(DataCenter* DC) {
         shape->update_center_y(shape->center_y() + kb_vy * dt);
 
         // 阻尼衰減（數字越小衰減越快）
-        kb_vx *= 0.85;
-        kb_vy *= 0.85;
+        kb_vx *= 0.6;
+        kb_vy *= 0.6;
 
         // 小到一定程度就歸零
         if (std::abs(kb_vx) < 5) kb_vx = 0;

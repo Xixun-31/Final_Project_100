@@ -12,9 +12,9 @@ void MonsterWolf::special_ability(DataCenter* DC) {
         Point pos{ shape->center_x(), shape->center_y() };
         Monster* small_wolf1 = create_monster(MonsterType::SMALLWOLF, pos1);
         Monster* small_wolf2 = create_monster(MonsterType::SMALLWOLF, pos2);
-        
-        Effect::emit_split(pos); // Use helper function
-        
+
+        DC->effectEvents.push_back(EffectEvent{EffectType::SPLIT, pos, al_get_time(), 1.0});
+
         DC->monsters.push_back(small_wolf1);
         DC->monsters.push_back(small_wolf2);
     }

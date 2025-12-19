@@ -11,7 +11,8 @@ enum class EffectType {
     SLIME_DEATH,
     // 之後要加更多特效就加在這裡，例如：
     EXPLOSION,
-    SUICIDE_EXPLOSION
+    SUICIDE_EXPLOSION,
+    SLAP
     // ICE,
     // HEAL,
 };
@@ -41,6 +42,8 @@ namespace Effect {
     void emit_explosion(const Point& pos);
     //
     void emit_suicide_explosion(const Point& pos);
+    
+    void emit_slap(const Point& pos);
 }
 
 
