@@ -18,6 +18,8 @@ public:
     
     bool is_active; // State for color
     double w, h;
+    ALLEGRO_BITMAP *img_flipped;
+    ALLEGRO_BITMAP *img_unflipped;
 };
 
 #endif
