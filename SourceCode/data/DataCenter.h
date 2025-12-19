@@ -24,6 +24,7 @@ class Win;
 class Lose;
 class About;
 class Portal;
+class Pause;
 
 /**
  * @brief Stores generic global data and relatively small data structures.
@@ -128,6 +129,7 @@ public:
   Lose *lose;
   About *about;
   Portal *portal; // Added Portal
+  Pause *pause;
   int level_counter;
   int curr_level;
 

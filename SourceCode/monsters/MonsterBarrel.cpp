@@ -1,7 +1,9 @@
 #include "MonsterBarrel.h"
 #include "../data/DataCenter.h"
 #include "../data/ImageCenter.h"
+#include "../data/SoundCenter.h" // Added
 #include "../Effect.h"
+#include <allegro5/allegro_audio.h> // Added
 #include "../shapes/Circle.h"
 #include "../Hero.h"
 #include <string>
@@ -40,6 +42,7 @@ void MonsterBarrel::update() {
         
         // Explode!
         Effect::emit_explosion(Point{shape->center_x(), shape->center_y()});
+        SoundCenter::get_instance()->play("./assets/sound/boom.WAV", ALLEGRO_PLAYMODE_ONCE);
         
         DataCenter *DC = DataCenter::get_instance();
         // Damage Radius: let's say 150

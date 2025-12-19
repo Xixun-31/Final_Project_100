@@ -3,6 +3,7 @@
 #include "data/GIFCenter.h"
 #include "data/ImageCenter.h"
 #include <allegro5/allegro.h>
+#include <allegro5/allegro_primitives.h> // Required for al_draw_circle
 #include "algif5/algif.h"  
 
 namespace {
@@ -189,7 +190,7 @@ void Effect::draw_all() {
             case EffectType::EXPLOSION: {
                  // 8 frames: explosion_1 ~ explosion_8
                  // duration per frame: 0.1s => total 0.8s
-                 double duration_per_frame = 0.1;
+                 double duration_per_frame = 0.02;
                  int total_frames = 8;
                  
                  ee.frame = static_cast<int>(t / duration_per_frame);
@@ -207,6 +208,18 @@ void Effect::draw_all() {
                      int h = al_get_bitmap_height(bmp);
                      al_draw_bitmap(bmp, ee.pos.x - w/2, ee.pos.y - h/2, 0);
                  }
+                 
+                 // Draw expanding circle
+                 // Max radius = 150 (same as MonsterBarrel damage radius)
+                 
+                 // t / (total_duration)
+                 double total_duration = total_frames * duration_per_frame;
+                 float p = (float)(t / total_duration);
+                 if (p > 1.0f) p = 1.0f;
+                 
+                 float current_radius = 150.0f * p;
+                 al_draw_circle(ee.pos.x, ee.pos.y, current_radius, al_map_rgb(255, 255, 255), 5.0f);
+                 
                  break;
             }
             case EffectType::SUICIDE_EXPLOSION: {

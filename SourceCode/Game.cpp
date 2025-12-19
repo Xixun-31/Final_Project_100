@@ -2,10 +2,12 @@
 // #include "Hero.h"
 #include "Level/Level.h"
 #include "Menu.h"
+#include "Pause.h"
 #include "About.h"
 #include "Portal.h" // Include Portal.h
 #include "Player.h"
 #include "Utils.h"
+#include "monsters/Monster.h"
 #include "allegro5/keycodes.h"
 #include "data/DataCenter.h"
 #include "data/FontCenter.h"
@@ -19,12 +21,17 @@
 #include <allegro5/allegro_ttf.h>
 #include <cstring>
 #include <vector>
+#include "towers/Bullet.h"
 #define DEBUG
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
 constexpr char game_start_sound_path[] = "./assets/sound/growl.wav";
 constexpr char background_img_path[] = "./assets/image/StartBackground.jpg";
-constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg";
+// constexpr char background_sound_path[] = "./assets/sound/BackgroundMusic.ogg"; // Legacy
+constexpr char menu_sound_path[] = "./assets/sound/menu.WAV";
+constexpr char level0_sound_path[] = "./assets/sound/level0.WAV";
+constexpr char normal_level_sound_path[] = "./assets/sound/normal_level.WAV";
+constexpr char boss_level_sound_path[] = "./assets/sound/boss_level.WAV";
 constexpr char menu_image_path[] = "./assets/image/scene/Menu.jpg";
 
 static const double SECRET_X1 = 800;
@@ -157,6 +164,7 @@ void Game::game_init() {
 
   DC->level->init();
   DC->menu->init();
+  DC->pause->init();
   DC->hero->init();
   DC->lose->init();
   DC->win->init();
@@ -170,6 +178,7 @@ void Game::game_init() {
       DC->portal = nullptr;
   }
   al_start_timer(timer);
+  level_bgm_played = false;
 }
 
 /**
@@ -188,8 +197,16 @@ bool Game::game_update() {
   switch (state) {
   case STATE::MENU: {
     static bool is_played = false;
+    // Play Menu Music
+    if (!level_bgm_played) { // Reusing this flag or creating a new one? 
+        // Let's use 'background' variable for current BGM instance.
+        if(background) al_stop_sample_instance(background); 
+        background = SC->play(menu_sound_path, ALLEGRO_PLAYMODE_LOOP);
+        level_bgm_played = true; 
+    }
+
     if (!is_played) {
-      SC->play(game_start_sound_path, ALLEGRO_PLAYMODE_ONCE);
+      // SC->play(game_start_sound_path, ALLEGRO_PLAYMODE_ONCE);
       DC->level_counter = 1;
       is_played = true;
     }
@@ -205,27 +222,24 @@ bool Game::game_update() {
             DC->monsterBullets.clear();
             DC->heroBullets.clear();
             DC->towerBullets.clear();
+            
+            // Stop Menu Music immediately or let next state handle it?
+            // Next state (LEVEL) should stop it and start its own.
+            // But we need to reset the flag.
+            level_bgm_played = false; 
+            if(background) al_stop_sample_instance(background);
+            background = nullptr;
+
         } else if(DC->menu->hover_btn == 2) { // About
             debug_log("<Game> state: change to ABOUT\n");
             state = STATE::ABOUT;
             DC->about->init();
+            SC->play("./assets/sound/begin.WAV", ALLEGRO_PLAYMODE_ONCE); // Begin Sound
         } else if(DC->menu->hover_btn == 3) { // Exit
              return false;
         }
     }
     
-    // Legacy space key support (optional, maybe remove to strictly follow "buttons")
-    // Keeping it might be confusing if we have buttons. The prompt didn't say remove it.
-    // But "Start" button implies mouse. I'll remove space key to force button usage as per "add 3 frames"
-    /*
-    if (DC->key_state[ALLEGRO_KEY_SPACE]) {
-      debug_log("<Game> state: change to LEVEL\n");
-      state = STATE::LEVEL;
-      DC->level->init();
-      DC->player->reset(); // Reset HP
-      DC->hero->init();   // Re-init hero to reset states
-    }
-    */
     break;
   }
   case STATE::ABOUT: {
@@ -233,6 +247,11 @@ bool Game::game_update() {
       if(DC->mouse_state[1] && !DC->prev_mouse_state[1]) {
           if(DC->about->hover_btn == 1) {
               state = STATE::MENU;
+              // Don't stop music, About shares Menu music usually.
+              // But if we defined it per state, Menu will restart it?
+              // My logic above checks !level_bgm_played.
+              // If About doesn't change flag, Menu won't restart.
+              // So Music keeps playing. Good.
           } else if(DC->about->hover_btn == 2) {
               DC->player->is_god_mode = !DC->player->is_god_mode;
               debug_log("God Mode toggled: %d\n", DC->player->is_god_mode);
@@ -241,15 +260,46 @@ bool Game::game_update() {
       break;
   }
   case STATE::LEVEL: {
-    static bool BGM_played = false;
+    // State management for transitions
+    static bool was_boss = false;
+    static bool was_level0 = false;
+    
     if (DC->curr_level != DC->level_counter) {
       DC->curr_level = DC->level_counter;
-      DC->level->load_level(DC->curr_level); // Removed old level loading
+      DC->level->load_level(DC->curr_level);
+      
+      // Level Changed. Check Music.
+      const char* target_music = normal_level_sound_path;
+      if(DC->curr_level == 0) target_music = level0_sound_path;
+      else if(DC->curr_level >= 3) target_music = boss_level_sound_path;
+      
+      bool is_boss = (DC->curr_level >= 3);
+      bool is_level0 = (DC->curr_level == 0);
+      
+       // Just restart it if type changes.
+       if(level_bgm_played) {
+            if(is_boss != was_boss || is_level0 != was_level0) {
+                if(background) al_stop_sample_instance(background);
+                background = SC->play(target_music, ALLEGRO_PLAYMODE_LOOP);
+                was_boss = is_boss;
+                was_level0 = is_level0;
+            }
+       }
     }
-    // debug_log("Remaining monsters: %d\n", DC->level->remain_monsters());
-    if (!BGM_played) {
-      background = SC->play(background_sound_path, ALLEGRO_PLAYMODE_LOOP);
-      BGM_played = true;
+    
+    // Initial Play Logic (Start of Game or after Pause/Menu)
+    if (!level_bgm_played) {
+      const char* target_music = normal_level_sound_path;
+      if(DC->curr_level == 0) target_music = level0_sound_path;
+      else if(DC->curr_level >= 3) target_music = boss_level_sound_path;
+      
+      if(background) al_stop_sample_instance(background);
+      background = SC->play(target_music, ALLEGRO_PLAYMODE_LOOP);
+      level_bgm_played = true;
+      
+      // Init static state
+      was_boss = (DC->curr_level >= 3);
+      was_level0 = (DC->curr_level == 0);
     }
 
     if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
@@ -257,34 +307,103 @@ bool Game::game_update() {
       debug_log("<Game> state: change to PAUSE\n");
       state = STATE::PAUSE;
     }
-    if (DC->level->all_waves_done() && DC->monsters.size() == 0) {
+    int dangerous_monsters = 0;
+    int barrels_count = 0;
+    for(const auto& m : DC->monsters) {
+        if(m->peek_type() != MonsterType::BARREL) dangerous_monsters++;
+        else barrels_count++;
+    }
+    // if(DC->level_counter == 0) debug_log("Level 0: Dang=%d, Barrels=%d\n", dangerous_monsters, barrels_count);
+
+    if (DC->level->all_waves_done() && dangerous_monsters == 0) {
       // Last Level (Level 3): Go directly to WIN
       if (DC->level_counter >= 3) {
           debug_log("Level 3 cleared. Direct Win.\n");
           debug_log("<Game> state: change to WIN\n");
           state = STATE::WIN;
-          BGM_played = false;
+          level_bgm_played = false;
+          SC->play("./assets/sound/win.WAV", ALLEGRO_PLAYMODE_ONCE); // WIN Sound
       }
       else {
-          // Other Levels: Spawn Portal
-          if(!DC->portal) {
-              DC->portal = new Portal(DC->window_width/2, DC->window_height/2);
-              DC->portal->init();
-          }
-          
-          // Check collision with Portal
-          if(DC->portal && DC->hero->shape->overlap(*DC->portal->shape) && DC->key_state[ALLEGRO_KEY_SPACE]) {
-              delete DC->portal;
-              DC->portal = nullptr;
-              DC->level_counter++;
-          }
+             // Logic for Level 1 Transition
+             if (DC->level_counter == 1) {
+                 if(barrels_count > 0) {
+                     // Go to Level 0
+                     if(!DC->portal) {
+                         DC->portal = new Portal(DC->window_width/2, DC->window_height/2, "./assets/image/circle_2.png");
+                         DC->portal->init();
+                     }
+                     if(DC->portal && DC->hero->shape->overlap(*DC->portal->shape)) { // Simply overlap to transfer? User said "right lower corner press e" originally but now "circle_2 -> L0"
+                         // Wait, user said "but existing logic requires overlap and space".
+                         // User prompt: "pass Level 1... if barrels left -> circle_2 -> L0... if no barrels -> circle -> L2"
+                         // Assuming standard portal interaction (Overlap + KEY?)
+                         // The prompt "Start after level no background no monster" issue was fixed.
+                         // The prompt "Change to: if barrels... -> circle_2 -> L0"
+                         // I will stick to the existing interaction (Overlap + Space) to trigger the teleport, but change destination.
+                         if(DC->key_state[ALLEGRO_KEY_SPACE]) { // Keeping Space as trigger for now unless "press e" is strictly required?
+                             // User said "Start after level... press e" in previous prompt (Step 91 context which was bug report), 
+                             // BUT in THIS prompt "Currently change to L0 is... right bottom press e please change to..."
+                             // This implies the "press e" was the OLD way or the USER'S DESCRIPTION of current unwanted state? 
+                             // "Current change to L0 is... press e... PLEASE CHANGE TO if ... circle_2 ... can convey to L0"
+                             // So I should use the Portal mechanism.
+                             delete DC->portal;
+                             DC->portal = nullptr;
+                             DC->level_counter = 0; // Go to Level 0
+                         }
+                     }
+                 } else {
+                     // Go to Level 2 (No barrels)
+                     if(!DC->portal) {
+                         DC->portal = new Portal(DC->window_width/2, DC->window_height/2, "./assets/image/circle.png");
+                         DC->portal->init();
+                     }
+                     if(DC->portal && DC->hero->shape->overlap(*DC->portal->shape) && DC->key_state[ALLEGRO_KEY_SPACE]) {
+                         delete DC->portal;
+                         DC->portal = nullptr;
+                         DC->level_counter = 2; // Go to Level 2
+                     }
+                 }
+             }
+             else {
+                 // Other Levels (Standard behavior) and Level 0 (Treasure)
+                 if(DC->level_counter != 0) {
+                      if(!DC->portal) {
+                          DC->portal = new Portal(DC->window_width/2, DC->window_height/2);
+                          DC->portal->init();
+                      }
+                      
+                      // Check collision with Portal
+                      if(DC->portal && DC->hero->shape->overlap(*DC->portal->shape) && DC->key_state[ALLEGRO_KEY_SPACE]) {
+                          delete DC->portal;
+                          DC->portal = nullptr;
+                          DC->level_counter++;
+                      }
+                 } else {
+                     // Logic for Level 0 (Treasure Dead -> Portal to Level 2)
+                     // Redundant check to ensure Treasure is really gone
+                     if(dangerous_monsters == 0) {
+                         if(!DC->portal) {
+                              DC->portal = new Portal(DC->window_width/2, DC->window_height/2);
+                              DC->portal->init();
+                         }
+                          
+                          // Check collision with Portal
+                          if(DC->portal && DC->hero->shape->overlap(*DC->portal->shape) && DC->key_state[ALLEGRO_KEY_SPACE]) {
+                              delete DC->portal;
+                              DC->portal = nullptr;
+                              DC->level_counter = 2; // Jump to Level 2
+                          }
+                     }
+                 }
+             }
       }
     }
     if (DC->player->HP <= 0) {
       if (DC->hero->is_death_anim_done()) {
         debug_log("<Game> state: change to END\n");
         state = STATE::LOSE;
-        BGM_played = false;
+        level_bgm_played = false;
+        SC->play("./assets/sound/lose.WAV", ALLEGRO_PLAYMODE_ONCE); // LOSE Sound
       }
     }
     // 按 E 才進（避免站著就瞬移）
@@ -315,10 +434,26 @@ bool Game::game_update() {
 }
 
   case STATE::PAUSE: {
+    DC->pause->update();
     if (DC->key_state[ALLEGRO_KEY_P] && !DC->prev_key_state[ALLEGRO_KEY_P]) {
       SC->toggle_playing(background);
       debug_log("<Game> state: change to LEVEL\n");
       state = STATE::LEVEL;
+    }
+    if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) {
+        if (DC->pause->hover_btn == 1) { // Resume
+            SC->toggle_playing(background);
+            debug_log("<Game> state: change to LEVEL\n");
+            state = STATE::LEVEL;
+            DC->hero->lock_attack(30); // Prevent accidental shot
+        } else if (DC->pause->hover_btn == 2) { // Menu
+             debug_log("<Game> state: change to MENU\n");
+             state = STATE::MENU;
+             al_stop_sample_instance(background); // Stop BGM when going to menu
+             level_bgm_played = false; // Reset BGM flag so it restarts when entering level again
+        } else if (DC->pause->hover_btn == 3) { // Exit
+             return false;
+        }
     }
     break;
   }
@@ -417,11 +552,7 @@ void Game::game_draw() {
   
   case STATE::PAUSE: {
     // game layout cover
-    al_draw_filled_rectangle(0, 0, DC->window_width, DC->window_height,
-                             al_map_rgba(50, 50, 50, 64));
-    al_draw_text(FC->consolas[FontSize::LARGE], al_map_rgb(255, 255, 255),
-                 DC->window_width / 2., DC->window_height / 2.,
-                 ALLEGRO_ALIGN_CENTRE, "GAME PAUSED");
+    DC->pause->draw();
     break;
   }
   case STATE::END: {

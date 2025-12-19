@@ -6,6 +6,7 @@
 #include "MonsterSlime.h"
 #include "MonsterSplit.h"
 #include "MonsterSuicide.h"
+#include "MonsterTreasure.h"
 #include "MonsterWolf.h"
 #include "MonsterWolfKnight.h"
 #include "MonsterSmallWolf.h"
@@ -72,6 +73,8 @@ Monster *Monster::create_monster(MonsterType type, const Point &p) {
     return new MonsterSuicide{p};
   case MonsterType::BARREL:
     return new MonsterBarrel{p};
+  case MonsterType::TREASURE:
+    return new MonsterTreasure{p};
   case MonsterType::MONSTERTYPE_MAX:
     break;
   }

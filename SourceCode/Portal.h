@@ -6,7 +6,7 @@
 
 class Portal : public Object {
 public:
-    Portal(double x, double y);
+    Portal(double x, double y, const char* img_path = "./assets/image/circle.png");
     void init();
     void update();
     void draw() override;

@@ -6,7 +6,9 @@
 #include "../towers/Bullet.h"
 #include "../towers/Tower.h"
 #include "DataCenter.h"
+#include "../data/SoundCenter.h"
 #include "../Effect.h"
+#include <allegro5/allegro_audio.h>
 void OperationCenter::update() {
 
   // Update monsters.
@@ -164,7 +166,8 @@ void OperationCenter::_update_hero_monster() {
   Hero *hero = DC->hero;
   for (size_t i = 0; i < monsters.size(); ++i) {
     // Check if the hero overlaps with the monster.
-    if (hero->shape->overlap(*(monsters[i]->shape))) {
+
+    if (hero->shape->overlap(*(monsters[i]->shape)) && monsters[i]->peek_type() != MonsterType::TREASURE) {
       if (monsters[i]->peek_type() == MonsterType::SUICIDE) {
           monsters[i]->HP = 0;
           Effect::emit_suicide_explosion(Point{monsters[i]->shape->center_x(), monsters[i]->shape->center_y()});
@@ -191,6 +194,11 @@ void OperationCenter::_update_monster_player() {
       monsters[i]->special_ability(DC);
       // Monster gets killed. Player receives money.
       Point pos(monsters[i]->shape->center_x(), monsters[i]->shape->center_y());
+      
+      // Play death sound for non-treasure and non-barrel monsters
+      if(monsters[i]->peek_type() != MonsterType::TREASURE && monsters[i]->peek_type() != MonsterType::BARREL) {
+          SoundCenter::get_instance()->play("./assets/sound/die.WAV", ALLEGRO_PLAYMODE_ONCE);
+      }
       if (monsters[i]->peek_type() == MonsterType::CAVEMAN) {
           Effect::emit_SSR_death(pos);
       } else if (monsters[i]->peek_type() == MonsterType::SLIME || monsters[i]->peek_type() == MonsterType::SMALLWOLF) {

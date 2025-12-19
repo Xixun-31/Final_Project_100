@@ -7,7 +7,7 @@ LevelConfig make_level0() {
     cfg.background_path = "./assets/image/scene/Level0.png";
     cfg.spawn_rate = 60;
     cfg.monsters.assign((size_t)MonsterType::MONSTERTYPE_MAX, 0);
-    cfg.monsters[(size_t)MonsterType::WOLF] = 2;
+    cfg.monsters[(size_t)MonsterType::TREASURE] = 1;
     return cfg;
 }
 

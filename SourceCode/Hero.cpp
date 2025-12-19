@@ -4,6 +4,8 @@
 #include "algif5/algif.h"
 #include "data/DataCenter.h"
 #include "data/ImageCenter.h"
+#include "data/SoundCenter.h"
+#include <allegro5/allegro_audio.h>
 #include "shapes/Rectangle.h"
 #include <allegro5/allegro_primitives.h>
 #include <cstring>
@@ -104,6 +106,7 @@ void Hero::init() {
   roll_cd = 0;
   attack_lock_timer = 30; // Lock for 0.5s to prevent accidental click
   roll_delay_timer = 0;
+  power_level = 0; // Reset power up on init
 
   ImageCenter *IC = ImageCenter::get_instance();
   ALLEGRO_BITMAP *bitmap = IC->get(img[state]);
@@ -386,11 +389,25 @@ void Hero::attack() {
   // Or just reuse one from TowerSetting.
   // For now, I'll use a placeholder path, or check what images are available.
   // I'll use "./assets/image/tower/Arcane_Beam.png" as a safe bet if it exists,
-  // or better, let's check ImageCenter or TowerSetting.
-  // Actually, let's just use a hardcoded path for now and user can change it.
+    std::string b_path = "./assets/image/tower/Arcane_Beam.png";
+    int dmg = 5;
+    bool animated = false;
+    if(power_level == 1) {
+        b_path = "./assets/image/hero/bullet_2.png"; // Initial path
+        dmg = 10;
+        animated = true;
+    }
+
    DC->heroBullets.emplace_back(
        new HeroBullet(Point{shape->center_x(), shape->center_y()}, DC->mouse,
-                      "./assets/image/tower/Arcane_Beam.png", 500, 5, 2500)); // Increased range
+                      b_path, 500, dmg, 2500, animated)); // Increased range
+
+  SoundCenter *SC = SoundCenter::get_instance();
+  if (power_level == 1) {
+      SC->play("./assets/sound/attack_2.WAV", ALLEGRO_PLAYMODE_ONCE);
+  } else {
+      SC->play("./assets/sound/attack.WAV", ALLEGRO_PLAYMODE_ONCE);
+  }
 
   ammo--;
   counter = attack_freq;
@@ -404,6 +421,8 @@ void Hero::reload() {
     return;
   is_reloading = true;
   reload_timer = reload_duration;
+  SoundCenter *SC = SoundCenter::get_instance();
+  SC->play("./assets/sound/reload.WAV", ALLEGRO_PLAYMODE_ONCE);
 }
 
 void Hero::activate_bomb() {
@@ -412,6 +431,8 @@ void Hero::activate_bomb() {
   is_bombing = true;
   bomb_timer = bomb_duration;
   bomb_count--;
+
+  SoundCenter::get_instance()->play("./assets/sound/erase.WAV", ALLEGRO_PLAYMODE_ONCE);
 
   // Clear all bullets
   DataCenter *DC = DataCenter::get_instance();
@@ -429,6 +450,8 @@ void Hero::hit() {
     debug_log("Hero hit! HP after: %d\n", DC->player->HP);
     invincible_timer = 60; // Invincible for 60 frames
     is_pain = true;
+    SoundCenter *SC = SoundCenter::get_instance();
+    SC->play("./assets/sound/pain.WAV", ALLEGRO_PLAYMODE_ONCE);
   }
 }
 
@@ -438,11 +461,20 @@ double SECRET_X2 = 750;
 double SECRET_Y2 = 550;
 
 bool Hero::is_invincible() { return invincible_timer > 0; }
-bool Hero::in_secret_zone() const {
-    DataCenter *DC = DataCenter::get_instance();
-    double hx = shape->center_x();
-    double hy = shape->center_y();
 
-    return (hx <= SECRET_X1 && hx >= SECRET_X2 &&
-            hy <= SECRET_Y1 && hy >= SECRET_Y2);
+void Hero::power_up() {
+    power_level = 1;
+    // Restore HP
+    DataCenter::get_instance()->player->HP = 5; // Restore to 5
+    // Restore Ammo
+    ammo = max_ammo;
+    is_reloading = false;
+}
+
+bool Hero::in_secret_zone() const {
+    if(shape->center_x() > SECRET_X2 && shape->center_x() < SECRET_X1 &&
+       shape->center_y() > SECRET_Y2 && shape->center_y() < SECRET_Y1) {
+           return true;
+       }
+    return false;
 }
