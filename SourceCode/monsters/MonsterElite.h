@@ -29,6 +29,7 @@ public:
 
     std::array<std::string, 4> idle_img;  // 靜止 4 張
     std::array<std::string, 5> move_img;  // 移動 5 張
+    std::array<std::string, 4> diag_bullet;  // 4 個方向子彈圖
 
     int   anim_frame       = 0;
     double anim_timer      = 0.0;
@@ -42,7 +43,7 @@ public:
     // ===== 衝刺（dash）相關 =====
     double last_dash_time  = 0.0;
     double dash_cooldown   = 3.0;   // 幾秒才會發動一次衝刺
-    double dash_duration   = 0.45;  // 衝刺持續多久
+    double dash_duration   = 0.75;  // 衝刺持續多久
     double dash_timer      = 0.0;
     double dash_speed      = 260.0; // 衝刺速度
 
@@ -54,8 +55,8 @@ public:
     void _update_animation(DataCenter* DC);
     void _update_motion(DataCenter* DC);
     void _enter_dash_toward_hero(DataCenter* DC);
+    void _fire_diagonal_barrage(DataCenter* DC);
     
-
 };
 
 #endif

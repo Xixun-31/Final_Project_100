@@ -244,7 +244,7 @@ bool Game::game_update() {
     static bool BGM_played = false;
     if (DC->curr_level != DC->level_counter) {
       DC->curr_level = DC->level_counter;
-      DC->level->load_level(DC->curr_level); // Removed old level loading
+      DC->level->load_level(3); // Removed old level loading
     }
     // debug_log("Remaining monsters: %d\n", DC->level->remain_monsters());
     if (!BGM_played) {
