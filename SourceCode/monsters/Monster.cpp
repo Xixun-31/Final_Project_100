@@ -19,6 +19,8 @@
 #include "../data/ImageCenter.h"
 #include "../shapes/Point.h"
 #include "../shapes/Rectangle.h"
+#include "../shapes/Circle.h"
+#include "../Table.h" // Added for collision check
 #include "../Effect.h"
 #include "../towers/Bullet.h"
 
@@ -225,9 +227,47 @@ if (hit_flash_timer < 0) hit_flash_timer = 0;
     dir = tmpdir;
 
     // 更新位置
-  
     shape->update_center_x(cx + move_dx);
     shape->update_center_y(cy + move_dy);
+
+    // Collision Check with Table
+    for(Table *table : DC->tables) {
+        if(!table->is_active) continue;
+        if(shape->overlap(*(table->shape))) {
+            // AABB Collision Resolution (Approximation for Circle)
+            double m_w, m_h;
+            if(shape->getType() == ShapeType::CIRCLE) {
+                 Circle *c = (Circle*)shape.get();
+                 m_w = c->r;
+                 m_h = c->r;
+            } else {
+                 // Assume Rectangle (fallback)
+                 m_w = 20; m_h = 20; // Default fallback if needed, but ideally cast
+                 if(shape->getType() == ShapeType::RECTANGLE) {
+                     Rectangle *r = (Rectangle*)shape.get();
+                     m_w = (r->x2 - r->x1) / 2.0;
+                     m_h = (r->y2 - r->y1) / 2.0;
+                 }
+            }
+
+            double t_w = table->w / 2.0;
+            double t_h = table->h / 2.0;
+            
+            double dx = shape->center_x() - table->shape->center_x();
+            double dy = shape->center_y() - table->shape->center_y();
+            
+            double ox = (m_w + t_w) - std::abs(dx);
+            double oy = (m_h + t_h) - std::abs(dy);
+            
+            if (ox < oy) {
+                if (dx > 0) shape->update_center_x(shape->center_x() + ox);
+                else shape->update_center_x(shape->center_x() - ox);
+            } else {
+                if (dy > 0) shape->update_center_y(shape->center_y() + oy);
+                else shape->update_center_y(shape->center_y() - oy);
+            }
+        }
+    }
   
 
     movement -= move_dist;

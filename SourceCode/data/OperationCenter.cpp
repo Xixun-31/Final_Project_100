@@ -5,6 +5,7 @@
 #include "../monsters/Monster.h"
 #include "../towers/Bullet.h"
 #include "../towers/Tower.h"
+#include "../Table.h" // Corrected path
 #include "DataCenter.h"
 #include "../data/SoundCenter.h"
 #include "../Effect.h"
@@ -82,20 +83,36 @@ void OperationCenter::_update_monster_heroBullet() {
   DataCenter *DC = DataCenter::get_instance();
   std::vector<Monster *> &monsters = DC->monsters;
   std::vector<Bullet *> &heroBullets = DC->heroBullets;
-  for (size_t i = 0; i < monsters.size(); ++i) {
-    for (size_t j = 0; j < heroBullets.size(); ++j) {
+  for (size_t i = 0; i < heroBullets.size(); ++i) {
+      bool deleted = false;
+      // Check Table Collision
+      for(Table *table : DC->tables) {
+          if(!table->is_active) continue;
+          if(heroBullets[i]->shape->overlap(*(table->shape))) {
+              delete heroBullets[i];
+              heroBullets.erase(heroBullets.begin() + i);
+              deleted = true;
+              --i;
+              break;
+          }
+      }
+      if(deleted) continue;
+      
+    for (size_t j = 0; j < monsters.size(); ++j) {
       // Check if the bullet overlaps with the monster.
-      if (monsters[i]->shape->overlap(*(heroBullets[j]->shape))) {
+      if (monsters[j]->shape->overlap(*(heroBullets[i]->shape))) {
         // Reduce the HP of the monster. Delete the bullet.
-        monsters[i]->HP -= heroBullets[j]->get_dmg();
-        Point bullet_pos{ heroBullets[j]->shape->center_x(), heroBullets[j]->shape->center_y() };
-        monsters[i]->on_hit(bullet_pos, 350.0); // 350 = 擊退強度，你可調
+        monsters[j]->HP -= heroBullets[i]->get_dmg();
+        Point bullet_pos{ heroBullets[i]->shape->center_x(), heroBullets[i]->shape->center_y() };
+        monsters[j]->on_hit(bullet_pos, 350.0); // 350 = 擊退強度，你可調
         
-        delete heroBullets[j];
-        heroBullets.erase(heroBullets.begin() + j);
-        --j;
+        delete heroBullets[i];
+        heroBullets.erase(heroBullets.begin() + i);
+        --i;
+        break; // Bullet is gone, stop checking other monsters
       }
     }
+
   }
 }
 
@@ -105,6 +122,20 @@ void OperationCenter::_update_hero_monsterBullet() {
   Player *player = DC->player;
   std::vector<Bullet*>& bullets = DC->monsterBullets;
   for (size_t i = 0; i < bullets.size(); ++i) {
+    bool deleted = false;
+    // Check Table Collision
+    for(Table *table : DC->tables) {
+        if(!table->is_active) continue;
+        if(bullets[i]->shape->overlap(*(table->shape))) {
+            delete bullets[i];
+            bullets.erase(bullets.begin() + i);
+            deleted = true;
+            --i;
+            break;
+        }
+    }
+    if(deleted) continue;
+
     // Check if the bullet overlaps with the hero.
     if (hero->shape->overlap(*(bullets[i]->shape))) {
       // Reduce the HP of the hero. Delete the bullet.
