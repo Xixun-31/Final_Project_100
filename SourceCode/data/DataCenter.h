@@ -25,6 +25,7 @@ class Lose;
 class About;
 class Portal;
 class Pause;
+class Table;
 
 /**
  * @brief Stores generic global data and relatively small data structures.
@@ -130,6 +131,7 @@ public:
   About *about;
   Portal *portal; // Added Portal
   Pause *pause;
+  std::vector<Table *> tables; // Added Tables
   int level_counter;
   int curr_level;
 

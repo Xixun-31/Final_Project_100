@@ -31,6 +31,10 @@ else
     CC := g++
     
     ALLEGRO_LIBRARIES := allegro-5 allegro_image-5 allegro_font-5 allegro_ttf-5 allegro_dialog-5 allegro_primitives-5 allegro_audio-5 allegro_acodec-5
+	Pause.o  lzw.o  gif.o  algif.o  bitmap.o  FontCenter.o  DataCenter.o  OperationCenter.o  SoundCenter.o  ImageCenter.o  GIFCenter.o \
+	Level1.o  Level3.o  Level0.o  Level.o  LevelFactory.o  Level2.o \
+	MonsterCaveMan.o  MonsterSuicide.o  MonsterElite.o  MonsterTreasure.o  MonsterBarrel.o  MonsterSmallWolf.o  MonsterSlime.o  Monster.o  MonsterWolf.o \
+	Shape.o  Tower.o  Bullet.o  Table.o
     ALLEGRO_FLAGS_RELEASE := $(shell pkg-config --cflags --libs $(ALLEGRO_LIBRARIES))
     
     ALLEGRO_DLL_PATH_RELEASE := 

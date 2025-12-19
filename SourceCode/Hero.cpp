@@ -10,6 +10,7 @@
 #include <allegro5/allegro_primitives.h>
 #include <cstring>
 #include "Utils.h"
+#include "Table.h" // Added
 
 namespace HeroSetting {
 static constexpr char Hero_images_root_path[40] = "./assets/image/hero/stable_";
@@ -304,6 +305,35 @@ void Hero::update() {
 
     if (DC->mouse_state[1] && !DC->prev_mouse_state[1]) {
       attack();
+    }
+    
+    // Check Table Collision
+    for(Table *table : DC->tables) {
+        if(!table->is_active) continue; // Passable if not active
+        if(shape->overlap(*(table->shape))) {
+            // AABB Collision Resolution (Minimum Translation Vector)
+            // Hero is known to be a Rectangle
+            Rectangle *h_rect = (Rectangle*)shape.get();
+            double h_w = (h_rect->x2 - h_rect->x1) / 2.0;
+            double h_h = (h_rect->y2 - h_rect->y1) / 2.0;
+            double t_w = table->w / 2.0;
+            double t_h = table->h / 2.0;
+            
+            double dx = shape->center_x() - table->shape->center_x();
+            double dy = shape->center_y() - table->shape->center_y();
+            
+            double ox = (h_w + t_w) - std::abs(dx);
+            double oy = (h_h + t_h) - std::abs(dy);
+            
+            // Push out on the axis with smaller overlap
+            if (ox < oy) {
+                if (dx > 0) shape->update_center_x(shape->center_x() + ox);
+                else shape->update_center_x(shape->center_x() - ox);
+            } else {
+                if (dy > 0) shape->update_center_y(shape->center_y() + oy);
+                else shape->update_center_y(shape->center_y() - oy);
+            }
+        }
     }
   }
 }

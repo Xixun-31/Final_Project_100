@@ -22,6 +22,7 @@
 #include <cstring>
 #include <vector>
 #include "towers/Bullet.h"
+#include "Table.h" // Added
 #define DEBUG
 // fixed settings
 constexpr char game_icon_img_path[] = "./assets/image/game_icon.jpg";
@@ -504,6 +505,20 @@ bool Game::game_update() {
     if ((state == STATE::LEVEL || state == STATE::LEVEL0) && !DC->hero->is_dying) {
       DC->level->update();
       OC->update();
+      
+      // Table Interaction
+        if(DC->key_state[ALLEGRO_KEY_F] && !DC->prev_key_state[ALLEGRO_KEY_F]) {
+            for(Table *table : DC->tables) {
+                 // Check distance
+                 double dx = DC->hero->shape->center_x() - table->shape->center_x();
+                 double dy = DC->hero->shape->center_y() - table->shape->center_y();
+                 // Simple rect distance or center distance. table is 100x50, hero is ~40?
+                 // Let's use 100 distance threshold
+                 if(dx*dx + dy*dy < 100*100) {
+                     table->toggle();
+                 }
+            }
+        }
     }
   }
   // game_update is finished. The states of current frame will be previous
@@ -530,11 +545,16 @@ void Game::game_draw() {
   }
   case STATE::ABOUT: {
       DC->about->draw();
+      for(Table *table : DC->tables) {
+          table->draw();
+      }
       break;
   }
-  case STATE::LEVEL0: 
   case STATE::LEVEL: {
     DC->level->draw();
+    for(Table *table : DC->tables) {
+        table->draw();
+    }
     if(DC->portal) DC->portal->draw();
     DC->hero->draw();
     OC->draw();

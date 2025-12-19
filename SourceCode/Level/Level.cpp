@@ -2,6 +2,7 @@
 #include "LevelConfig.h"
 #include "../Player.h"
 #include "../Utils.h"
+#include "../Portal.h" // Added for delete
 #include "../data/DataCenter.h"
 #include "../monsters/Monster.h"
 #include "../towers/Bullet.h"
@@ -49,9 +50,20 @@ void Level::init() {
 /**
  * @brief 依照關卡編號load
  */
+#include "../Table.h" // Added
+
 void Level::load_level(int lvl) {
   DataCenter *DC = DataCenter::get_instance();
-
+  // Clear existing tables
+  for (Table *table : DC->tables) {
+    delete table;
+  }
+  DC->tables.clear();
+  
+  if (DC->portal) {
+      delete DC->portal;
+      DC->portal = nullptr;
+  }
   level = lvl;
   monster_spawn_counter = 0;
   spawn_points.emplace_back(SpawnPoint{Point{0, 0}});
@@ -93,6 +105,7 @@ void Level::load_level(int lvl) {
       });
   }
   if (lvl == 1) {
+      
       waves.push_back(Wave{
           .units = {{MonsterType::BARREL, 1, 1, 4}}, // Wave 0: Barrel (Center)
           .spawn_interval = 0,
@@ -119,6 +132,9 @@ void Level::load_level(int lvl) {
       });
   }
   if (lvl == 2) {
+      // Spawn Table in Level 2 as requested (550, 300)
+      DC->tables.push_back(new Table(550, 300, 100, 20));
+
       waves.push_back(Wave{
       .units = {{MonsterType::CAVEMAN, 4}},
       .spawn_interval = 50,
