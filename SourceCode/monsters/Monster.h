@@ -21,6 +21,7 @@ enum class MonsterType {
   SPLIT,
   SUICIDE,
   BARREL,
+  TREASURE,
   MONSTERTYPE_MAX
 };
 

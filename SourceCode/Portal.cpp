@@ -4,8 +4,8 @@
 #include "shapes/Rectangle.h"
 #include <allegro5/allegro_primitives.h>
 
-Portal::Portal(double x, double y) {
-    img_path = "./assets/image/circle.png"; 
+Portal::Portal(double x, double y, const char* img_path) {
+    this->img_path = img_path; 
     
     // Fixed small size: 60x60 (Radius 30)
     int w = 60; 
@@ -14,7 +14,11 @@ Portal::Portal(double x, double y) {
     shape.reset(new Rectangle(x - w/2, y - h/2, x + w/2, y + h/2));
 }
 
+#include "data/SoundCenter.h" // Added
+#include <allegro5/allegro_audio.h> // Added
+
 void Portal::init() {
+    SoundCenter::get_instance()->play("./assets/sound/portal.WAV", ALLEGRO_PLAYMODE_ONCE);
 }
 
 void Portal::update() {

@@ -78,10 +78,13 @@ private:
   std::vector<std::string> boom_img;
   int bomb_count = 3;
   const int max_bomb_count = 3;
+  int power_level = 0;
   void activate_bomb();
 
 public:
   int get_bomb_count() const { return bomb_count; }
+  void power_up();
+  void lock_attack(int frames = 20) { attack_lock_timer = frames; }
 };
 
 #endif

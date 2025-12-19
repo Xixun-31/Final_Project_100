@@ -60,6 +60,14 @@ void Level::load_level(int lvl) {
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length, DC->game_field_length}});
   spawn_points.emplace_back(SpawnPoint{Point{DC->game_field_length / 2, DC->game_field_length / 2}}); // Index 4: Center
   
+  if (lvl == 0) {
+      // Clear any existing monsters (e.g. Barrels from Level 1)
+      for(auto m : DC->monsters) {
+          delete m;
+      }
+      DC->monsters.clear();
+  }
+  
   if (background) {
     al_destroy_bitmap(background);
     background = nullptr;
@@ -75,6 +83,14 @@ void Level::load_level(int lvl) {
   unit_idx = 0;
   unit_left = 0;
 
+  if (lvl == 0) {
+      waves.push_back(Wave{
+          .units = {{MonsterType::TREASURE, 1, 1, 4}}, // 1 Treasure at Center (4)
+          .spawn_interval = 0,
+          .start_delay = 30, // Short delay before appearance
+          .wait_until_clear = true
+      });
+  }
   if (lvl == 1) {
       waves.push_back(Wave{
           .units = {{MonsterType::BARREL, 1, 1, 4}}, // Wave 0: Barrel (Center)
