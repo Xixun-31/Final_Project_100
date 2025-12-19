@@ -9,7 +9,8 @@ MonsterElite::MonsterElite(const Point& p)
     : Monster(MonsterType::ELITE, p)   // 記得在你的 MonsterType enum 加一個 ELITE
 {
     // 基本能力值你可以自己調
-    HP    = 50;
+    maxHP    = 150;
+    HP       = maxHP;
     v     = 40;   // 一般移動速度（MOVE 用）
     money = 20;
 

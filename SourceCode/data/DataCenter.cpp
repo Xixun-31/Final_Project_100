@@ -51,6 +51,8 @@ DataCenter::~DataCenter() {
   delete lose;
   delete about;
   delete pause;
+  delete portal;
+  delete elite_boss;
   for (Monster *&m : monsters) {
     delete m;
   }

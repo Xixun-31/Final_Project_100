@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <allegro5/allegro_primitives.h>
 #include <allegro5/allegro_ttf.h>
+#include "./monsters/MonsterElite.h"
 
 // fixed settings
 constexpr char love_img_path[] = "./assets/image/love.png";
@@ -163,6 +164,10 @@ void UI::draw() {
   al_draw_textf(FC->consolas[FontSize::MEDIUM], al_map_rgb(255, 255, 255),
                 love_img_padding, love_img_padding + 40, ALLEGRO_ALIGN_LEFT,
                 "Bomb: %d", hero->get_bomb_count());
+  if (DC->curr_level == 3) {
+    UI::draw_boss_hp_bar();
+  }
+
 
   // draw tower shop items
   // for(auto &[bitmap, p, price] : tower_items) {
@@ -220,4 +225,29 @@ void UI::draw() {
     // break;
   }
   }
+  
+}
+
+void UI::draw_boss_hp_bar() {
+    DataCenter* DC = DataCenter::get_instance();
+    MonsterElite* boss = DC->elite_boss;
+    if (!boss) return;
+    if (boss->HP <= 0) return;
+
+    float ratio = (float)boss->HP / (float)boss->maxHP;
+    ratio = std::clamp(ratio, 0.0f, 1.0f);
+
+    float bar_w = 420;
+    float bar_h = 18;
+    float x = DC->window_width * 0.5f - bar_w * 0.5f;
+    float y = 18;
+
+    // 背景框
+    al_draw_filled_rectangle(x - 3, y - 3, x + bar_w + 3, y + bar_h + 3, al_map_rgb(0,0,0));
+
+    // 底色
+    al_draw_filled_rectangle(x, y, x + bar_w, y + bar_h, al_map_rgb(60,60,60));
+
+    // 血量
+    al_draw_filled_rectangle(x, y, x + bar_w * ratio, y + bar_h, al_map_rgb(220,50,50));
 }

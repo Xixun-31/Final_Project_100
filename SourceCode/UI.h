@@ -13,6 +13,7 @@ public:
 	void init();
 	void update();
 	void draw();
+	void draw_boss_hp_bar();
 private:
 	enum class STATE {
 		HALT, // -> HOVER

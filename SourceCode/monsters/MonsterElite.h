@@ -17,6 +17,7 @@ public:
   void update() override;
   void draw() override;
   bool is_moving = false;
+  int maxHP;
   private:
     enum class BossMode {
         IDLE,     // 原地晃動
@@ -71,6 +72,8 @@ public:
 
     // 震動/閃紅
     double ult_shake_phase = 0.0;   // 用來做抖動
+
+    
 
     void _update_animation(DataCenter* DC);
     void _update_motion(DataCenter* DC);

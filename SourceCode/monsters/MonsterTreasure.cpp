@@ -17,7 +17,7 @@ MonsterTreasure::MonsterTreasure(const Point &p) : Monster(MonsterType::TREASURE
     int h = al_get_bitmap_height(bitmap);
     
     // Scale up by 3x
-    int scale = 3;
+    int scale = 1.5;
     w *= scale;
     h *= scale;
 
@@ -68,8 +68,8 @@ void MonsterTreasure::draw() {
         al_draw_scaled_bitmap(
             bitmap, 
             0, 0, al_get_bitmap_width(bitmap), al_get_bitmap_height(bitmap),
-            shape->center_x() - al_get_bitmap_width(bitmap) * scale / 2, 
-            shape->center_y() - al_get_bitmap_height(bitmap) * scale / 2,
+            shape->center_x() - al_get_bitmap_width(bitmap) * scale / 2 + 50, 
+            shape->center_y() - al_get_bitmap_height(bitmap) * scale / 2 - 50,
             al_get_bitmap_width(bitmap) * scale, 
             al_get_bitmap_height(bitmap) * scale, 
             0

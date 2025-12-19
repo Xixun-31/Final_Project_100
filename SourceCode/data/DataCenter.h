@@ -26,6 +26,7 @@ class About;
 class Portal;
 class Pause;
 class Table;
+class MonsterElite;
 
 /**
  * @brief Stores generic global data and relatively small data structures.
@@ -134,6 +135,7 @@ public:
   std::vector<Table *> tables; // Added Tables
   int level_counter;
   int curr_level;
+  MonsterElite* elite_boss = nullptr; // Added Elite Boss
 
 private:
   DataCenter();

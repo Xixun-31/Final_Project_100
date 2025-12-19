@@ -207,7 +207,6 @@ void OperationCenter::_update_hero_monster() {
           Effect::emit_suicide_explosion(Point{monsters[i]->shape->center_x(), monsters[i]->shape->center_y()});
       }
       if (monsters[i]->peek_type() == MonsterType::DEMONNINJA) {
-          Effect::emit_slap(Point{monsters[i]->shape->center_x(), monsters[i]->shape->center_y()});
           Point from{ monsters[i]->shape->center_x(), monsters[i]->shape->center_y() };
           DC->hero->apply_knockback(from, 520.0, 0.20);  // 力度/時間自己調
       }

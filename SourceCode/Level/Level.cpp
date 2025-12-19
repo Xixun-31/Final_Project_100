@@ -12,7 +12,7 @@
 #include <array>
 #include <cstdio>
 #include "../monsters/Monster.h"
-
+#include "../monsters/MonsterElite.h"
 using namespace std;
 
 // fixed settings
@@ -55,6 +55,8 @@ void Level::init() {
 void Level::load_level(int lvl) {
   DataCenter *DC = DataCenter::get_instance();
   // Clear existing tables
+  spawn_points.clear();
+
   for (Table *table : DC->tables) {
     delete table;
   }
@@ -243,6 +245,11 @@ void Level::update() {
         }
 
         DC->monsters.emplace_back(Monster::create_monster(w.units[unit_idx].type, sp));
+        Monster* m = DC->monsters.back();
+        if (m->peek_type() == MonsterType::ELITE) {
+            DC->elite_boss = static_cast<MonsterElite*>(m); // 你確定 type 就是 ELITE
+    // 或安全一點：DC->elite_boss = dynamic_cast<MonsterElite*>(m);
+        }
     }
 
     unit_left -= k;
